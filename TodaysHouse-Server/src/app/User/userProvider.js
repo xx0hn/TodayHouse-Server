@@ -46,9 +46,10 @@ exports.passwordCheck = async function (selectUserPasswordParams) {
       selectUserPasswordParams
   );
   connection.release();
-  return passwordCheckResult[0];
+  return passwordCheckResult;
 };
 
+//유저 상태 체크
 exports.accountCheck = async function (email) {
   const connection = await pool.getConnection(async (conn) => conn);
   const userAccountResult = await userDao.selectUserAccount(connection, email);
@@ -56,3 +57,12 @@ exports.accountCheck = async function (email) {
 
   return userAccountResult;
 };
+
+//닉네임으로 유저 조회
+exports.nickNameCheck = async function(nickName){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const nickNameUser = await userDao.selectUserNickName(connection, nickName);
+  connection.release();
+
+  return nickNameUser;
+}

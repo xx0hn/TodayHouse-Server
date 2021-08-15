@@ -13,7 +13,8 @@ const {connect} = require("http2");
 
 // Service: Create, Update, Delete 비즈니스 로직 처리
 
-exports.createUser = async function (email, password, nickname) {
+//유저 생성
+exports.createUser = async function (email, passWord, passWordCheck, nickName) {
     try {
         // 이메일 중복 확인
         const emailRows = await userProvider.emailCheck(email);
@@ -23,13 +24,26 @@ exports.createUser = async function (email, password, nickname) {
         // 비밀번호 암호화
         const hashedPassword = await crypto
             .createHash("sha512")
-            .update(password)
+            .update(passWord)
             .digest("hex");
+        //확인 비밀번호 암호화
+        const hashedPasswordCheck = await crypto
+            .createHash("sha512")
+            .update(passWordCheck)
+            .digest("hex");
+        //비밀번호 확인
+        if(hashedPassword!=hashedPasswordCheck){
+            return errResponse(baseResponse.SIGNUP_PASSWORD_CHECK_NOT_MATCH);
+        }
+        //닉네임 중복 확인
+        const nickNameRows = await userProvider.nickNameCheck(nickName);
+        if(nickNameRows.length>0){
+            return errResponse(baseResponse.SIGNUP_REDUNDANT_NICKNAME);
+        }
 
-        const insertUserInfoParams = [email, hashedPassword, nickname];
+        const insertUserInfoParams = [email, hashedPassword, nickName];
 
         const connection = await pool.getConnection(async (conn) => conn);
-
         const userIdResult = await userDao.insertUserInfo(connection, insertUserInfoParams);
         console.log(`추가된 회원 : ${userIdResult[0].insertId}`)
         connection.release();
@@ -44,7 +58,8 @@ exports.createUser = async function (email, password, nickname) {
 
 
 // TODO: After 로그인 인증 방법 (JWT)
-exports.postSignIn = async function (email, password) {
+// 로그인
+exports.postSignIn = async function (email, passWord) {
     try {
         // 이메일 여부 확인
         const emailRows = await userProvider.emailCheck(email);
@@ -55,13 +70,12 @@ exports.postSignIn = async function (email, password) {
         // 비밀번호 확인
         const hashedPassword = await crypto
             .createHash("sha512")
-            .update(password)
+            .update(passWord)
             .digest("hex");
 
         const selectUserPasswordParams = [selectEmail, hashedPassword];
         const passwordRows = await userProvider.passwordCheck(selectUserPasswordParams);
-
-        if (passwordRows[0].password !== hashedPassword) {
+        if (passwordRows.length < 1){
             return errResponse(baseResponse.SIGNIN_PASSWORD_WRONG);
         }
 
@@ -96,6 +110,7 @@ exports.postSignIn = async function (email, password) {
     }
 };
 
+// 유저 수정
 exports.editUser = async function (id, nickname) {
     try {
         console.log(id)

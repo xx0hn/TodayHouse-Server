@@ -5,55 +5,84 @@ const baseResponse = require("../../../config/baseResponseStatus");
 const {response, errResponse} = require("../../../config/response");
 
 const regexEmail = require("regex-email");
+const regexPW = /^.*(?=.*[0-9])(?=.*[a-zA-Z]).*$/; // 숫자 + 영문
 const {emit} = require("nodemon");
 
-/**
- * API No. 0
- * API Name : 테스트 API
- * [GET] /app/test
- */
-// exports.getTest = async function (req, res) {
-//     return res.send(response(baseResponse.SUCCESS))
-// }
+
 
 /**
  * API No. 1
  * API Name : 유저 생성 (회원가입) API
- * [POST] /app/users
+ * [POST] /app/sign-up
  */
 exports.postUsers = async function (req, res) {
 
     /**
-     * Body: email, password, nickname
+     * Body: email, password, passwordCheck, nickname
      */
-    const {email, password, nickname} = req.body;
-
+    const {email, passWord, passWordCheck, nickName} = req.body;
+    // var num=passWord.search(/[0-9]/g);
+    // var eng=passWord.search(/[a-z]/gi);
     // 빈 값 체크
     if (!email)
         return res.send(response(baseResponse.SIGNUP_EMAIL_EMPTY));
-
     // 길이 체크
     if (email.length > 30)
         return res.send(response(baseResponse.SIGNUP_EMAIL_LENGTH));
-
     // 형식 체크 (by 정규표현식)
     if (!regexEmail.test(email))
         return res.send(response(baseResponse.SIGNUP_EMAIL_ERROR_TYPE));
-
-    // 기타 등등 - 추가하기
+    //빈 값 체크
+    if (!passWord)
+        return res.send(response(baseResponse.SIGNUP_PASSWORD_EMPTY));
+    if(passWord.length<8)
+        return res.send(response(baseResponse.SIGNUP_PASSWORD_LENGTH));
+    else if (!regexPW.test(passWord)) {
+        return res.send(response(baseResponse.SIGNUP_PASSWORD_ERROR_TYPE_VAL));
+    }
+    if(!passWordCheck)
+        return res.send(response(baseResponse.SIGNUP_PASSWORD_CHECK_EMPTY));
+    if(!nickName)
+        return res.send(response(baseResponse.SIGNUP_NICKNAME_EMPTY));
+    if(nickName.length>10)
+        return res.send(response(baseResponse.SIGNUP_NICKNAME_LENGTH));
 
 
     const signUpResponse = await userService.createUser(
         email,
-        password,
-        nickname
+        passWord,
+        passWordCheck,
+        nickName
     );
 
     return res.send(signUpResponse);
 };
 
+// TODO: After 로그인 인증 방법 (JWT)
 /**
  * API No. 2
+ * API Name : 로그인 API
+ * [POST] /app/login
+ * body : email, passsWord
+ */
+exports.login = async function (req, res) {
+
+    const {email, passWord} = req.body;
+
+    if(!email) return res.send(response(baseResponse.SIGNIN_EMAIL_EMPTY));
+    if(email.length>30) return res.send(response(baseResponse.SIGNIN_EMAIL_LENGTH));
+    if(!regexEmail.test(email)) return res.send(response(baseResponse.SIGNIN_EMAIL_ERROR_TYPE));
+
+    if(!passWord) return res.send(response(baseResponse.SIGNIN_PASSWORD_EMPTY));
+    if(passWord.length<8) return res.send(response(baseResponse.SIGNIN_PASSWORD_LENGTH))
+
+    const signInResponse = await userService.postSignIn(email, passWord);
+
+    return res.send(signInResponse);
+};
+
+/**
+ * API No.
  * API Name : 유저 조회 API (+ 이메일로 검색 조회)
  * [GET] /app/users
  */
@@ -76,7 +105,7 @@ exports.getUsers = async function (req, res) {
 };
 
 /**
- * API No. 3
+ * API No.
  * API Name : 특정 유저 조회 API
  * [GET] /app/users/{userId}
  */
@@ -94,23 +123,6 @@ exports.getUserById = async function (req, res) {
 };
 
 
-// TODO: After 로그인 인증 방법 (JWT)
-/**
- * API No. 4
- * API Name : 로그인 API
- * [POST] /app/login
- * body : email, passsword
- */
-exports.login = async function (req, res) {
-
-    const {email, password} = req.body;
-
-    // TODO: email, password 형식적 Validation
-
-    const signInResponse = await userService.postSignIn(email, password);
-
-    return res.send(signInResponse);
-};
 
 
 /**
@@ -127,7 +139,7 @@ exports.patchUsers = async function (req, res) {
     const userIdFromJWT = req.verifiedToken.userId
 
     const userId = req.params.userId;
-    const nickname = req.body.nickname;
+    const nickname = req.body.nickName;
 
     if (userIdFromJWT != userId) {
         res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
