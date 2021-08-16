@@ -278,6 +278,37 @@ exports.postScrapFolders = async function(req,res){
     return res.send(response(postScrapFolders));
 }
 
+/**
+ * API No. 8
+ * API Name : 스크랩 폴더 수정 API
+ * [PATCH] /app/users/:userId/scrap-folders
+ */
+exports.patchScrapFolders = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {type} = req.query;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!type) return res.send(response(baseResponse.USER_EDIT_FOLDER_TYPE_EMPTY));
+    if(type==='DELETE'){
+        const {folderId} = req.body;
+        if(!folderId) return res.send(response(baseResponse.SCRAP_FOLDER_ID_EMTPY));
+        const deleteFolder = await userService.deleteFolder(userId, folderId);
+        return res.send(response(deleteFolder));
+    }
+    if(type==='EDIT'){
+        const {folderId, folderName, folderInfo} = req.body;
+        if(!folderId) return res.send(response(baseResponse.SCRAP_FOLDER_ID_EMTPY));
+        if(!folderName) return res.send(response(baseResponse.SCRAP_FOLDER_NAME_EMPTY));
+        const editFolder = await userService.editFolder(folderName, folderInfo, folderId);
+        return res.send(response(editFolder));
+    }
+    else{
+        return res.send(response(baseResponse.USER_EDIT_FOLDER_TYPE_ERROR));
+    }
+}
+
 
 /**
  * API No.

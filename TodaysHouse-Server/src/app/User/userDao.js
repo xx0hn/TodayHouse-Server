@@ -320,7 +320,7 @@ async function insertSocialUserInfo(connection, insertUserInfoParams) {
 async function patchProfileImage(connection, editInfo, userId){
   const patchProfileImageQuery=`
   update User
-  set profileImageUrl = ? 
+  set profileImageUrl = ? , updatedAt = current_timestamp
   where id = ?;`;
   const [patchProfileImageRows] = await connection.query(patchProfileImageQuery, [editInfo, userId]);
   return patchProfileImageRows;
@@ -330,7 +330,7 @@ async function patchProfileImage(connection, editInfo, userId){
 async function patchBackgroundImage(connection, editInfo, userId){
   const patchBackgroundImageQuery=`
   update User
-  set backgroundImageUrl=?
+  set backgroundImageUrl=? , updatedAt = current_timestamp
   where id = ?;`;
   const [patchBackgroundImageRows] = await connection.query(patchBackgroundImageQuery, [editInfo, userId]);
   return patchBackgroundImageRows;
@@ -340,7 +340,7 @@ async function patchBackgroundImage(connection, editInfo, userId){
 async function patchNickName(connection, editInfo, userId){
   const patchNickNameQuery=`
   update User
-  set nickName = ?
+  set nickName = ?, updatedAt = current_timestamp
   where id = ?;`;
   const [patchNickNameRows] = await connection.query(patchNickNameQuery, [editInfo, userId]);
   return patchNickNameRows;
@@ -350,7 +350,7 @@ async function patchNickName(connection, editInfo, userId){
 async function patchMyUrl(connection, editInfo, userId){
   const patchMyUrlQuery=`
   update User
-  set myUrl = ?
+  set myUrl = ?, updatedAt = current_timestamp
   where id = ?;`;
   const [patchMyUrlRows] = await connection.query(patchMyUrlQuery, [editInfo, userId]);
   return patchMyUrlRows;
@@ -360,7 +360,7 @@ async function patchMyUrl(connection, editInfo, userId){
 async function patchIntro(connection, editInfo, userId){
   const patchIntroQuery=`
   update User
-  set introduce = ?
+  set introduce = ?, updatedAt = current_timestamp
   where id = ?;`;
   const [patchIntroRows] = await connection.query(patchIntroQuery, [editInfo, userId]);
   return patchIntroRows;
@@ -383,6 +383,26 @@ async function postScrapFolders(connection, userId, folderName, folderInfo){
   values(?, ?, ?);`;
   const [scrapFoldersRows] = await connection.query(postScrapFoldersQuery, [userId, folderName, folderInfo]);
   return scrapFoldersRows;
+}
+
+//스크랩 폴더 삭제
+async function deleteFolder(connection, userId, folderId){
+  const deleteFolderQuery=`
+  update Folder
+  set status = 'DELETED', updatedAt = current_timestamp
+  where userId = ? and id = ?;`;
+  const [deleteFolderRows] = await connection.query(deleteFolderQuery, [userId, folderId]);
+  return deleteFolderRows;
+}
+
+//스크랩 폴더 수정
+async function editFolder(connection, folderName, folderInfo, folderId){
+  const editFolderQuery=`
+  update Folder
+  set name = ? , info = ?, updatedAt = current_timestamp
+  where id = ?;`;
+  const [editFolderRows] = await connection.query(editFolderQuery, [folderName, folderInfo, folderId]);
+  return editFolderRows;
 }
 
 module.exports = {
@@ -412,4 +432,6 @@ module.exports = {
   patchIntro,
   selectUserByFolderName,
   postScrapFolders,
+  deleteFolder,
+  editFolder,
 };

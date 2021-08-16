@@ -58,6 +58,9 @@ module.exports = function(app){
     // 7. 스크랩 폴더 생성 API
     app.post('/app/users/:userId/scrap-folders', jwtMiddleware, user.postScrapFolders);
 
+    // 8. 스크랩 폴더 수정 API
+    app.patch('/app/users/:userId/scrap-folders', jwtMiddleware, user.patchScrapFolders);
+
     //  유저 조회 API (+ 검색)
     app.get('/app/users',user.getUsers); 
 

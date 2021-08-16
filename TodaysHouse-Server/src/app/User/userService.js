@@ -238,3 +238,29 @@ exports.postScrapFolders = async function (userId, folderName, folderInfo){
         return errResponse(baseResponse.DB_ERROR);
     }
 }
+
+//스크랩 폴더 삭제
+exports.deleteFolder = async function (userId, folderId){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const deleteFolder = await userDao.deleteFolder(connection, userId, folderId);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - deleteScrapFolders Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//스크랩 폴더 수정
+exports.editFolder = async function (folderName, folderInfo, folderId){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const editFolder = await userDao.editFolder(connection, folderName, folderInfo, folderId);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - editScrapFolders Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
