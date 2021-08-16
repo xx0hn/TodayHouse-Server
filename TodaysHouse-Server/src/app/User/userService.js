@@ -223,18 +223,3 @@ exports.patchIntro = async function(editInfo, userId){
     }
 }
 
-// 유저 수정
-exports.editUser = async function (id, nickname) {
-    try {
-        console.log(id)
-        const connection = await pool.getConnection(async (conn) => conn);
-        const editUserResult = await userDao.updateUserInfo(connection, id, nickname)
-        connection.release();
-
-        return response(baseResponse.SUCCESS);
-
-    } catch (err) {
-        logger.error(`App - editUser Service error\n: ${err.message}`);
-        return errResponse(baseResponse.DB_ERROR);
-    }
-}

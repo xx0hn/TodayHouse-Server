@@ -65,12 +65,7 @@ module.exports = function(app){
 
 
     // TODO: After 로그인 인증 방법 (JWT)
-
-
-    // 회원 정보 수정 API (JWT 검증 및 Validation - 메소드 체이닝 방식으로 jwtMiddleware 사용)
-    app.patch('/app/users/:userId', jwtMiddleware, user.patchUsers)
-
-
+    
 
 };
 
