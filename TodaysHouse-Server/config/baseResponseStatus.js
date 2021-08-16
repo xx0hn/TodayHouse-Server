@@ -44,6 +44,9 @@ module.exports = {
     USER_EDIT_TYPE_EMTPY: { "isSuccess": false, "code": 2025, "message": "수정할 유저 정보의 타입을 입력해주세요. " },
     USER_EDIT_INFO_EMTPY: { "isSuccess": false, "code": 2026, "message": "수정할 유저의 정보를 입력해주세요. " },
 
+    SCRAP_FOLDER_NAME_EMPTY: { "isSuccess": false, "code": 2027, "message": "스크랩 폴더명을 입력해주세요. " },
+
+
 
     // Response error
     SIGNUP_REDUNDANT_EMAIL : { "isSuccess": false, "code": 3001, "message":"중복된 이메일입니다." },
@@ -56,6 +59,8 @@ module.exports = {
     SIGNIN_WITHDRAWAL_ACCOUNT : { "isSuccess": false, "code": 3006, "message": "탈퇴 된 계정입니다. 고객센터에 문의해주세요." },
     USER_EDIT_TYPE_ERROR: { "isSuccess": false, "code": 3008, "message": "수정할 유저 정보의 타입을 정확하게 입력해주세요. (PROFILE_IMAGE/BACKGROUND_IMAGE/NICKNAME/MY_URL/INTRO) " },
     USER_MY_URL_TYPE_ERROR: { "isSuccess": false, "code": 3009, "message": "URL 형식에 맞춰주세요. (https://~) "},
+
+    REDUNDANT_FOLDER_NAME: { "isSuccess": false, "code": 3010, "message": "중복된 폴더명입니다. "},
 
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},

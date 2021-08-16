@@ -55,7 +55,8 @@ module.exports = function(app){
     // 6. 프로필 수정 API
     app.patch('/app/users/:userId/profiles', jwtMiddleware, user.patchProfiles);
 
-
+    // 7. 스크랩 폴더 생성 API
+    app.post('/app/users/:userId/scrap-folders', jwtMiddleware, user.postScrapFolders);
 
     //  유저 조회 API (+ 검색)
     app.get('/app/users',user.getUsers); 
@@ -65,7 +66,7 @@ module.exports = function(app){
 
 
     // TODO: After 로그인 인증 방법 (JWT)
-    
+
 
 };
 

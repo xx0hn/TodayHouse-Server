@@ -223,3 +223,18 @@ exports.patchIntro = async function(editInfo, userId){
     }
 }
 
+//스크랩 폴더 생성
+exports.postScrapFolders = async function (userId, folderName, folderInfo){
+    try{
+        const folderNameRows = await userProvider.checkFolderNames(userId,folderName);
+        if(folderNameRows.length>0)
+            return errResponse(baseResponse.REDUNDANT_FOLDER_NAME);
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const postScrapFolders = await userDao.postScrapFolders(connection, userId, folderName, folderInfo);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - postScrapFolders Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}

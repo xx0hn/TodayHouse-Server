@@ -259,6 +259,26 @@ exports.patchProfiles = async function(req, res) {
     return res.send(errResponse(baseResponse.USER_EDIT_TYPE_ERROR));
 }
 
+
+/**
+ * API No. 7
+ * API Name : 스크랩 폴더 생성 API
+ * [POST] /app/users/:userId/scrap-folders
+ */
+exports.postScrapFolders = async function(req,res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {folderName, folderInfo} = req.body;
+
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!folderName) return res.send(response(baseResponse.SCRAP_FOLDER_NAME_EMPTY));
+    const postScrapFolders = await userService.postScrapFolders(userId, folderName, folderInfo);
+    return res.send(response(postScrapFolders));
+}
+
+
 /**
  * API No.
  * API Name : 유저 조회 API (+ 이메일로 검색 조회)

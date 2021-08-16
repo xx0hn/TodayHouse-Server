@@ -366,6 +366,25 @@ async function patchIntro(connection, editInfo, userId){
   return patchIntroRows;
 }
 
+//폴더명 중복 확인
+async function selectUserByFolderName(connection, userId, folderName){
+  const selectUserByFolderNameQuery=`
+  select userId
+  from Folder
+  where userId = ? and name = ?;`;
+  const [userByFolderRows] = await connection.query(selectUserByFolderNameQuery, [userId, folderName]);
+  return userByFolderRows;
+}
+
+//스크랩 폴더 생성
+async function postScrapFolders(connection, userId, folderName, folderInfo){
+  const postScrapFoldersQuery=`
+  insert into Folder(userId, name, info)
+  values(?, ?, ?);`;
+  const [scrapFoldersRows] = await connection.query(postScrapFoldersQuery, [userId, folderName, folderInfo]);
+  return scrapFoldersRows;
+}
+
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -373,7 +392,6 @@ module.exports = {
   insertUserInfo,
   selectUserPassword,
   selectUserAccount,
-  updateUserInfo,
   selectUserNickName,
   selectUserMyPages,
   selectUserPictures,
@@ -392,4 +410,6 @@ module.exports = {
   patchNickName,
   patchMyUrl,
   patchIntro,
+  selectUserByFolderName,
+  postScrapFolders,
 };

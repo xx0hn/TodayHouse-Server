@@ -154,3 +154,10 @@ exports.countPictures = async function(usersId){
   connection.release();
   return countPictures;
 }
+
+//폴더명 중복 확인
+exports.checkFolderNames = async function(userId, folderName){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const checkFolderNames = await userDao.selectUserByFolderName(connection, userId, folderName);
+  return checkFolderNames;
+}
