@@ -324,6 +324,56 @@ async function insertSocialUserInfo(connection, insertUserInfoParams) {
   return insertUserInfoRow;
 }
 
+//프로필 이미지 변경
+async function patchProfileImage(connection, editInfo, userId){
+  const patchProfileImageQuery=`
+  update User
+  set profileImageUrl = ? 
+  where id = ?;`;
+  const [patchProfileImageRows] = await connection.query(patchProfileImageQuery, [editInfo, userId]);
+  return patchProfileImageRows;
+}
+
+//배경 이미지 변경
+async function patchBackgroundImage(connection, editInfo, userId){
+  const patchBackgroundImageQuery=`
+  update User
+  set backgroundImageUrl=?
+  where id = ?;`;
+  const [patchBackgroundImageRows] = await connection.query(patchBackgroundImageQuery, [editInfo, userId]);
+  return patchBackgroundImageRows;
+}
+
+//닉네임 변경
+async function patchNickName(connection, editInfo, userId){
+  const patchNickNameQuery=`
+  update User
+  set nickName = ?
+  where id = ?;`;
+  const [patchNickNameRows] = await connection.query(patchNickNameQuery, [editInfo, userId]);
+  return patchNickNameRows;
+}
+
+//My URL 변경
+async function patchMyUrl(connection, editInfo, userId){
+  const patchMyUrlQuery=`
+  update User
+  set myUrl = ?
+  where id = ?;`;
+  const [patchMyUrlRows] = await connection.query(patchMyUrlQuery, [editInfo, userId]);
+  return patchMyUrlRows;
+}
+
+//한줄 소개 변경
+async function patchIntro(connection, editInfo, userId){
+  const patchIntroQuery=`
+  update User
+  set introduce = ?
+  where id = ?;`;
+  const [patchIntroRows] = await connection.query(patchIntroQuery, [editInfo, userId]);
+  return patchIntroRows;
+}
+
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -345,4 +395,9 @@ module.exports = {
   selectUserPageInfo,
   countPictures,
   insertSocialUserInfo,
+  patchProfileImage,
+  patchBackgroundImage,
+  patchNickName,
+  patchMyUrl,
+  patchIntro,
 };

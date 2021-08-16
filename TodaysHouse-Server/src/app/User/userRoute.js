@@ -48,9 +48,12 @@ module.exports = function(app){
     // 4. 다른 유저 페이지 조회 API
     app.get('/app/users/:userId/profiles', jwtMiddleware, user.getOtherProfiles);
 
-    // 35. 카카오 로그인 API
+    // 5. 카카오 로그인 API
     app.post('/app/login/kakao', user.loginKakao);
     app.get('/auth/kakao/callback', passport.authenticate('kakao-login', { failureRedirect: '/auth', successRedirect: '/' }));
+
+    // 6. 프로필 수정 API
+    app.patch('/app/users/:userId/profiles', jwtMiddleware, user.patchProfiles);
 
 
 

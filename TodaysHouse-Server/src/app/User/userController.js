@@ -5,6 +5,7 @@ const baseResponse = require("../../../config/baseResponseStatus");
 const {response, errResponse} = require("../../../config/response");
 
 const regexEmail = require("regex-email");
+const regexURL = /https[:][/][/]+([\w\-]+\.)+([\w]{2,10})+$/;
 const regexPW = /^.*(?=.*[0-9])(?=.*[a-zA-Z]).*$/; // 숫자 + 영문
 const {emit} = require("nodemon");
 
@@ -160,82 +161,7 @@ exports.getOtherProfiles = async function(req, res){
     return res.send(response(baseResponse.SUCCESS, result));
 }
 
-
-
-/**
- * API No.
- * API Name : 유저 조회 API (+ 이메일로 검색 조회)
- * [GET] /app/users
- */
-exports.getUsers = async function (req, res) {
-
-    /**
-     * Query String: email
-     */
-    const email = req.query.email;
-
-    if (!email) {
-        // 유저 전체 조회
-        const userListResult = await userProvider.retrieveUserList();
-        return res.send(response(baseResponse.SUCCESS, userListResult));
-    } else {
-        // 유저 검색 조회
-        const userListByEmail = await userProvider.retrieveUserList(email);
-        return res.send(response(baseResponse.SUCCESS, userListByEmail));
-    }
-};
-
-/**
- * API No.
- * API Name : 특정 유저 조회 API
- * [GET] /app/users/{userId}
- */
-exports.getUserById = async function (req, res) {
-
-    /**
-     * Path Variable: userId
-     */
-    const userId = req.params.userId;
-
-    if (!userId) return res.send(errResponse(baseResponse.USER_USERID_EMPTY));
-
-    const userByUserId = await userProvider.retrieveUser(userId);
-    return res.send(response(baseResponse.SUCCESS, userByUserId));
-};
-
-
-
-
-/**
- * API No. 5
- * API Name : 회원 정보 수정 API + JWT + Validation
- * [PATCH] /app/users/:userId
- * path variable : userId
- * body : nickname
- */
-exports.patchUsers = async function (req, res) {
-
-    // jwt - userId, path variable :userId
-
-    const userIdFromJWT = req.verifiedToken.userId
-
-    const userId = req.params.userId;
-    const nickname = req.body.nickName;
-
-    if (userIdFromJWT != userId) {
-        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
-    } else {
-        if (!nickname) return res.send(errResponse(baseResponse.USER_NICKNAME_EMPTY));
-
-        const editUserInfo = await userService.editUser(userId, nickname)
-        return res.send(editUserInfo);
-    }
-};
-
-
-
-
-/** API No.35
+/** API No.5
  * API Name : 카카오 로그인 API
  * [POST] /app/login/kakao
  */
@@ -294,6 +220,118 @@ exports.loginKakao = async function (req, res) {
         return res.send(errResponse(baseResponse.USER_INFO_EMPTY));
     }
 };
+
+/**
+ * API No. 6
+ * API Name : 프로필 수정 API
+ * [PATCH] /app/users/:userId/profiles
+ */
+exports.patchProfiles = async function(req, res) {
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {type} = req.query;
+    const {editInfo} = req.body;
+    if (!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if (userIdFromJWT != userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if (!type) return res.send(response(baseResponse.USER_EDIT_TYPE_EMTPY));
+    if (type === 'PROFILE_IMAGE') {
+        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMTPY));
+        const patchProfileImage = await userService.patchProfileImage(editInfo, userId);
+        return res.send(response(patchProfileImage));
+    } else if (type === 'BACKGROUND_IMAGE') {
+        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMTPY));
+        const patchBackgroundImage = await userService.patchBackgroundImage(editInfo, userId);
+        return res.send(response(patchBackgroundImage));
+    } else if (type === 'NICKNAME') {
+        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMTPY));
+        const patchNickName = await userService.patchNickName(editInfo, userId);
+        return res.send(response(patchNickName));
+    } else if (type === 'MY_URL') {
+        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMTPY));
+        const patchMyUrl = await userService.patchMyUrl(editInfo, userId);
+        return res.send(response(patchMyUrl));
+    } else if (type === 'INTRO') {
+        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMTPY));
+        const patchIntro = await userService.patchIntro(editInfo, userId);
+        return res.send(response(patchIntro));
+    }
+    return res.send(errResponse(baseResponse.USER_EDIT_TYPE_ERROR));
+}
+
+/**
+ * API No.
+ * API Name : 유저 조회 API (+ 이메일로 검색 조회)
+ * [GET] /app/users
+ */
+exports.getUsers = async function (req, res) {
+
+    /**
+     * Query String: email
+     */
+    const email = req.query.email;
+
+    if (!email) {
+        // 유저 전체 조회
+        const userListResult = await userProvider.retrieveUserList();
+        return res.send(response(baseResponse.SUCCESS, userListResult));
+    } else {
+        // 유저 검색 조회
+        const userListByEmail = await userProvider.retrieveUserList(email);
+        return res.send(response(baseResponse.SUCCESS, userListByEmail));
+    }
+};
+
+/**
+ * API No.
+ * API Name : 특정 유저 조회 API
+ * [GET] /app/users/{userId}
+ */
+exports.getUserById = async function (req, res) {
+
+    /**
+     * Path Variable: userId
+     */
+    const userId = req.params.userId;
+
+    if (!userId) return res.send(errResponse(baseResponse.USER_USERID_EMPTY));
+
+    const userByUserId = await userProvider.retrieveUser(userId);
+    return res.send(response(baseResponse.SUCCESS, userByUserId));
+};
+
+
+
+
+/**
+ * API No.
+ * API Name : 회원 정보 수정 API + JWT + Validation
+ * [PATCH] /app/users/:userId
+ * path variable : userId
+ * body : nickname
+ */
+exports.patchUsers = async function (req, res) {
+
+    // jwt - userId, path variable :userId
+
+    const userIdFromJWT = req.verifiedToken.userId
+
+    const userId = req.params.userId;
+    const nickname = req.body.nickName;
+
+    if (userIdFromJWT != userId) {
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    } else {
+        if (!nickname) return res.send(errResponse(baseResponse.USER_NICKNAME_EMPTY));
+
+        const editUserInfo = await userService.editUser(userId, nickname)
+        return res.send(editUserInfo);
+    }
+};
+
+
+
+
 
 
 

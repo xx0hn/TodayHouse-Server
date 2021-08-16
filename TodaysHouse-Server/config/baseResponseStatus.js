@@ -41,6 +41,10 @@ module.exports = {
     USER_ACCESS_TOKEN_WRONG: { "isSuccess": false, "code": 2023, "message": "Access Token이 잘못되었습니다. " },
     USER_INFO_EMPTY: { "isSuccess": false, "code": 2024, "message": "유저 정보를 입력해주세요. " },
 
+    USER_EDIT_TYPE_EMTPY: { "isSuccess": false, "code": 2025, "message": "수정할 유저 정보의 타입을 입력해주세요. " },
+    USER_EDIT_INFO_EMTPY: { "isSuccess": false, "code": 2026, "message": "수정할 유저의 정보를 입력해주세요. " },
+
+
     // Response error
     SIGNUP_REDUNDANT_EMAIL : { "isSuccess": false, "code": 3001, "message":"중복된 이메일입니다." },
     SIGNUP_REDUNDANT_NICKNAME : { "isSuccess": false, "code": 3002, "message":"중복된 닉네임입니다." },
@@ -50,6 +54,8 @@ module.exports = {
     SIGNIN_PASSWORD_WRONG : { "isSuccess": false, "code": 3004, "message": "비밀번호가 잘못 되었습니다." },
     SIGNIN_INACTIVE_ACCOUNT : { "isSuccess": false, "code": 3005, "message": "비활성화 된 계정입니다. 고객센터에 문의해주세요." },
     SIGNIN_WITHDRAWAL_ACCOUNT : { "isSuccess": false, "code": 3006, "message": "탈퇴 된 계정입니다. 고객센터에 문의해주세요." },
+    USER_EDIT_TYPE_ERROR: { "isSuccess": false, "code": 3008, "message": "수정할 유저 정보의 타입을 정확하게 입력해주세요. (PROFILE_IMAGE/BACKGROUND_IMAGE/NICKNAME/MY_URL/INTRO) " },
+    USER_MY_URL_TYPE_ERROR: { "isSuccess": false, "code": 3009, "message": "URL 형식에 맞춰주세요. (https://~) "},
 
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},

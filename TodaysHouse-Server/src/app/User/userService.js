@@ -6,6 +6,8 @@ const userDao = require("./userDao");
 const baseResponse = require("../../../config/baseResponseStatus");
 const {response} = require("../../../config/response");
 const {errResponse} = require("../../../config/response");
+const regexEmail = require("regex-email");
+// const regexURL = /(https)\:[/][/]+([\w\-])+$/;
 
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
@@ -145,6 +147,81 @@ exports.createSocialUser = async function (name, email, loginStatus) {
         return errResponse(baseResponse.DB_ERROR);
     }
 };
+
+//프로필 이미지 수정
+exports.patchProfileImage = async function(editInfo, userId) {
+    try {
+            const connection = await pool.getConnection(async (conn) => conn);
+            const patchProfileImage = await userDao.patchProfileImage(connection, editInfo, userId);
+            connection.release();
+            return response(baseResponse.SUCCESS);
+    } catch (err) {
+        logger.error(`App - patchProfileImage Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//배경 이미지 수정
+exports.patchBackgroundImage = async function(editInfo, userId) {
+    try {
+        const connection = await pool.getConnection(async (conn) => conn);
+        const patchBackgroundImage = await userDao.patchBackgroundImage(connection, editInfo, userId);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch (err) {
+        logger.error(`App - patchBackgroundImage Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//닉네임 수정
+exports.patchNickName = async function(editInfo, userId) {
+    try {
+        const nickNameCheck = await userProvider.nickNameCheck(editInfo);
+        if (nickNameCheck.length > 0) {
+            return errResponse(baseResponse.SIGNUP_REDUNDANT_NICKNAME);
+        } else {
+            const connection = await pool.getConnection(async (conn) => conn);
+            const patchNickName = await userDao.patchNickName(connection, editInfo, userId);
+            connection.release();
+            return response(baseResponse.SUCCESS);
+        }
+    } catch (err) {
+        logger.error(`App - patchNickName Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+
+//MyURL 수정
+exports.patchMyUrl = async function(editInfo, userId) {
+    try {
+        // if (!regexURL.test(editInfo))
+        //     return errResponse(baseResponse.USER_MY_URL_TYPE_ERROR);
+         {
+            const connection = await pool.getConnection(async (conn) => conn);
+            const patchMyUrl = await userDao.patchMyUrl(connection, editInfo, userId);
+            connection.release();
+            return response(baseResponse.SUCCESS);
+        }
+    } catch (err) {
+        logger.error(`App - patchMyUrl Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//한줄소개 수정
+exports.patchIntro = async function(editInfo, userId){
+    try {
+        const connection = await pool.getConnection(async (conn) => conn);
+        const patchIntro = await userDao.patchIntro(connection, editInfo, userId);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - patchIntroduce Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
 
 // 유저 수정
 exports.editUser = async function (id, nickname) {
