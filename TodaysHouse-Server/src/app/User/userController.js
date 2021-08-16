@@ -8,6 +8,12 @@ const regexEmail = require("regex-email");
 const regexPW = /^.*(?=.*[0-9])(?=.*[a-zA-Z]).*$/; // 숫자 + 영문
 const {emit} = require("nodemon");
 
+const axios = require('axios');
+const secret_config = require('../../../config/secret');
+const jwt = require('jsonwebtoken');
+const { logger } = require('../../../config/winston');
+const baseResponseStatus = require('../../../config/baseResponseStatus');
+
 
 
 /**
@@ -82,6 +88,81 @@ exports.login = async function (req, res) {
 };
 
 /**
+ * API No. 3
+ * API Name : 유저 마이페이지 조회 API
+ * [GET] /app/users/:userId/mypages
+ */
+exports.getMyPages = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const result=[];
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId){
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    }
+    else{
+        const getMyPages = await userProvider.getMyPages(userId);
+        const getPictures = await userProvider.getPictures(userId);
+        for(let i=0; i<8; i++){
+            const getUserPictures = await userProvider.getUserPictures(userId, i+1);
+            getPictures.push(getUserPictures);
+        }
+        const getScrapBook = await userProvider.getScrapBook(userId);
+        const countScrapBook = await userProvider.countScrapBook(userId);
+        countScrapBook.push(getScrapBook);
+        const getHouseWarm = await userProvider.getHouseWarm(userId);
+        const countHouseWarm = await userProvider.countHouseWarm(userId);
+        countHouseWarm.push(getHouseWarm);
+        const getKnowHow = await userProvider.getKnowHow(userId);
+        const countKnowHow = await userProvider.countKnowHow(userId);
+        countKnowHow.push(getKnowHow)
+        result.push({MyPageInfo: getMyPages, Pictures: getPictures
+                , AmountScrapBook: countScrapBook
+                , AmountHouseWarm: countHouseWarm
+                , AmountKnowHow: countKnowHow});
+        return res.send(response(baseResponse.SUCCESS, result));
+    }
+}
+
+/**
+ * API No. 4
+ * API Name : 다른 유저 페이지 조회 API
+ * [GET] /app/users/:userId/profiles
+ */
+exports.getOtherProfiles = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {usersId} = req.body;
+    const result =[];
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!usersId) return res.send(response(baseResponse.TARGET_USER_USERID_EMPTY));
+
+    const userPageInfo = await userProvider.userPageInfo(usersId);
+    const countPictures = await userProvider.countPictures(usersId);
+    const getPictures = await userProvider.getPictures(usersId);
+    for(let i=0; i<8; i++){
+        const getUserPictures = await userProvider.getUserPictures(usersId, i+1);
+        getPictures.push(getUserPictures);
+    }
+    countPictures.push(getPictures);
+    const countHouseWarm = await userProvider.countHouseWarm(usersId);
+    const getHouseWarm = await userProvider.getHouseWarm(usersId);
+    countHouseWarm.push(getHouseWarm);
+    const countKnowHows = await userProvider.countKnowHow(usersId);
+    const getKnowHows = await userProvider.getKnowHow(usersId);
+    countKnowHows.push(getKnowHows);
+    const getScrapBook = await userProvider.getScrapBook(usersId);
+    const countScrapBook = await userProvider.countScrapBook(usersId);
+    countScrapBook.push(getScrapBook);
+    result.push({UsersInfo: userPageInfo, Pictures: countPictures, HouseWarms: countHouseWarm, KnowHows: countKnowHows, ScrapBook: countScrapBook});
+    return res.send(response(baseResponse.SUCCESS, result));
+}
+
+
+
+/**
  * API No.
  * API Name : 유저 조회 API (+ 이메일로 검색 조회)
  * [GET] /app/users
@@ -154,6 +235,65 @@ exports.patchUsers = async function (req, res) {
 
 
 
+/** API No.35
+ * API Name : 카카오 로그인 API
+ * [POST] /app/login/kakao
+ */
+exports.loginKakao = async function (req, res) {
+    const {accessToken} = req.body;
+    try {
+        let kakao_profile;
+        try {
+            kakao_profile = await axios.get('https://kapi.kakao.com/v2/user/me', {
+                headers: {
+                    Authorization: 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json',
+                },
+            });
+        } catch (err) {
+            logger.error(`Can't get kakao profile\n: ${JSON.stringify(err)}`);
+            return res.send(errResponse(baseResponse.USER_ACCESS_TOKEN_WRONG));
+        }
+        const name = kakao_profile.data.kakao_account.profile.nickname;
+        const email = kakao_profile.data.kakao_account.email;
+        const emailRows = await userProvider.emailCheck(email);
+        // 이미 존재하는 이메일인 경우 = 회원가입 되어 있는 경우 -> 로그인 처리
+        if (emailRows.length > 0) {
+            const userInfoRows = await userProvider.accountCheck(email);
+            const token = await jwt.sign(
+                {
+                    userId: userInfoRows[0].id,
+                },
+                secret_config.jwtsecret,
+                {
+                    expiresIn: '365d',
+                    subject: 'userId',
+                },
+            );
+
+            const result = { userId: userInfoRows[0].id, jwt: token };
+            return res.send(response(baseResponse.SUCCESS, result));
+            // 그렇지 않은 경우 -> 회원가입 처리
+        } else {
+            const result = {
+                name: name,
+                email: email,
+                loginStatus: 'KAKAO',
+            };
+
+            const signUpResponse = await userService.createSocialUser(
+                // name,
+                name,
+                email,
+                result.loginStatus,
+            );
+            return res.send(response(baseResponse.SUCCESS, result));
+        }
+    } catch (err) {
+        logger.error(`App - logInKakao Query error\n: ${JSON.stringify(err)}`);
+        return res.send(errResponse(baseResponse.USER_INFO_EMPTY));
+    }
+};
 
 
 

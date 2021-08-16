@@ -3,4 +3,5 @@ node_modules/*
 package-lock.json
 config/database.js
 log/*
+README.md
 .DS_Store

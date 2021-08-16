@@ -110,6 +110,42 @@ exports.postSignIn = async function (email, passWord) {
     }
 };
 
+
+
+//카카오 소셜 회원 가입
+exports.createSocialUser = async function (name, email, loginStatus) {
+    try {
+        // email 중복 확인
+        const emailRows = await userProvider.emailCheck(email);
+        if (emailRows.length > 0) return errResponse(baseResponse.SIGNUP_REDUNDANT_EMAIL);
+        const nickNameRows = await userProvider.nickNameCheck(name);
+        if(nickNameRows.length>0){
+            return errResponse(baseResponse.SIGNUP_REDUNDANT_NICKNAME);
+        }
+
+        const insertSocialUserInfoParams = [name, email, loginStatus];
+
+        const connection = await pool.getConnection(async (conn) => conn);
+
+        const userIdResult = await userDao.insertSocialUserInfo(
+            connection,
+            insertSocialUserInfoParams,
+        );
+        const userInfoRows = await userProvider.accountCheck(email);
+        if (userInfoRows[0].status === 'INACTIVE') {
+            return errResponse(baseResponse.SIGNIN_INACTIVE_ACCOUNT);
+        } else if (userInfoRows[0].status === 'DELETED') {
+            return errResponse(baseResponse.SIGNIN_WITHDRAWAL_ACCOUNT);
+        }
+        console.log(`추가된 회원 : ${userIdResult[0].insertId}`);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch (err) {
+        logger.error(`App - createUser Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+};
+
 // 유저 수정
 exports.editUser = async function (id, nickname) {
     try {
