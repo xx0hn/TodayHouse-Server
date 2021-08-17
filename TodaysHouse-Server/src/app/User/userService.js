@@ -264,3 +264,60 @@ exports.editFolder = async function (folderName, folderInfo, folderId){
         return errResponse(baseResponse.DB_ERROR);
     }
 }
+
+//집들이 스크랩
+exports.scrapHouseWarm = async function (userId, id, folderId){
+    try{
+        const houseWarmRows = await userProvider.checkHouseWarm(userId, id);
+        if(houseWarmRows.length>0){
+            const connection = await pool.getConnection(async(conn)=>conn);
+            const editScrapStatus = await userDao.editScrapStatus(connection, userId, id);
+            connection.release();
+            return response(baseResponse.SUCCESS);
+        }
+        else{
+            const connection = await pool.getConnection(async(conn)=>conn);
+            const addScrap = await userDao.postScrap(connection, userId, id, folderId);
+            connection.release();
+            return response(baseResponse.SUCCESS);
+        }
+    }catch(err){
+        logger.error(`App - Scrap Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//상품 스크랩
+exports.scrapProduct = async function (userId, id, folderId){
+    try{
+        const productRows = await userProvider.checkProduct(userId, id);
+        if(productRows.length>0){
+            const connection = await pool.getConnection(async(conn)=>conn);
+            const editScrapStatus = await userDao.editProductScrapStatus(connection, userId, id);
+            connection.release();
+            return response(baseResponse.SUCCESS);
+        }
+        else{
+            const connection = await pool.getConnection(async(conn)=>conn);
+            const addScrap = await userDao.postProductScrap(connection, userId, id, folderId);
+            connection.release();
+            return response(baseResponse.SUCCESS);
+        }
+    }catch(err){
+        logger.error(`App - Scrap Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//스크랩 취소
+exports.patchScrap = async function (userId, scrapId){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const patchScrap = await userDao.patchScrap(connection, userId, scrapId);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - cancelScrap Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}

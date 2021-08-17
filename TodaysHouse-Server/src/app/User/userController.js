@@ -293,13 +293,13 @@ exports.patchScrapFolders = async function(req, res){
     if(!type) return res.send(response(baseResponse.USER_EDIT_FOLDER_TYPE_EMPTY));
     if(type==='DELETE'){
         const {folderId} = req.body;
-        if(!folderId) return res.send(response(baseResponse.SCRAP_FOLDER_ID_EMTPY));
+        if(!folderId) return res.send(response(baseResponse.SCRAP_FOLDER_ID_EMPTY));
         const deleteFolder = await userService.deleteFolder(userId, folderId);
         return res.send(response(deleteFolder));
     }
     if(type==='EDIT'){
         const {folderId, folderName, folderInfo} = req.body;
-        if(!folderId) return res.send(response(baseResponse.SCRAP_FOLDER_ID_EMTPY));
+        if(!folderId) return res.send(response(baseResponse.SCRAP_FOLDER_ID_EMPTY));
         if(!folderName) return res.send(response(baseResponse.SCRAP_FOLDER_NAME_EMPTY));
         const editFolder = await userService.editFolder(folderName, folderInfo, folderId);
         return res.send(response(editFolder));
@@ -309,6 +309,48 @@ exports.patchScrapFolders = async function(req, res){
     }
 }
 
+/**
+ * API No. 9
+ * API Name : 스크랩 폴더 생성 API
+ * [POST] /app/users/:userId/scrap-folders
+ */
+exports.postScrap = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {type} = req.query;
+    const {id, folderId} = req.body;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!type) return res.send(response(baseResponse.SCRAP_TYPE_EMPTY));
+    if(!id) return res.send(response(baseResponse.SCRAP_ID_EMPTY));
+    if(type==='HOUSEWARM'){
+        const scrapHouseWarm = await userService.scrapHouseWarm(userId, id, folderId);
+        return res.send(response(scrapHouseWarm));
+    }
+    else if(type==='PRODUCT'){
+        const scrapProduct = await userService.scrapProduct(userId, id, folderId);
+        return res.send(response(scrapProduct));
+    }
+    return res.send(response(baseResponse.SCRAP_TYPE_ERROR));
+}
+
+/**
+ * API No. 10
+ * API Name : 스크랩 취소 API
+ * [PATCH] /app/users/:userId/scrap-folders
+ */
+exports.patchScrap = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {scrapId} = req.body;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!scrapId) return res.send(response(baseResponse.SCRAP_SCRAPID_EMPTY));
+    const patchScrap = await userService.patchScrap(userId, scrapId);
+    return res.send(response(patchScrap));
+}
 
 /**
  * API No.

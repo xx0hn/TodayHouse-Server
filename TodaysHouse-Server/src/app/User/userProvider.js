@@ -159,5 +159,22 @@ exports.countPictures = async function(usersId){
 exports.checkFolderNames = async function(userId, folderName){
   const connection = await pool.getConnection(async(conn)=>conn);
   const checkFolderNames = await userDao.selectUserByFolderName(connection, userId, folderName);
+  connection.release();
   return checkFolderNames;
+}
+
+//집들이 스크랩 확인
+exports.checkHouseWarm = async function(userId, id){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const checkHouseWarm = await userDao.selectHouseWarmById(connection, userId, id);
+  connection.release();
+  return checkHouseWarm;
+}
+
+//상품 스크랩 확인
+exports.checkProduct = async function(userId, id){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const checkProduct = await userDao.selectProductById(connection, userId, id);
+  connection.release();
+  return checkProduct;
 }

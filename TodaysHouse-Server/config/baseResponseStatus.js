@@ -47,7 +47,11 @@ module.exports = {
     SCRAP_FOLDER_NAME_EMPTY: { "isSuccess": false, "code": 2027, "message": "스크랩 폴더명을 입력해주세요. " },
 
     USER_EDIT_FOLDER_TYPE_EMPTY: { "isSuccess": false, "code": 2028, "message": "수정 유형을 입력해주세요. " },
-    SCRAP_FOLDER_ID_EMTPY: { "isSuccess": false, "code": 2029, "message": "스크랩 폴더id를 입력해주세요. " },
+    SCRAP_FOLDER_ID_EMPTY: { "isSuccess": false, "code": 2029, "message": "스크랩 폴더id를 입력해주세요. " },
+
+    SCRAP_TYPE_EMPTY: { "isSuccess": false, "code": 2030, "message": "스크랩 타입을 입력해주세요. " },
+    SCRAP_ID_EMPTY: { "isSuccess": false, "code": 2031, "message": "스크랩할 id를 입력해주세요. " },
+    SCRAP_SCRAPID_EMPTY: { "isSuccess": false, "code": 2032, "message": "스크랩 id를 입력해주세요. " },
 
 
 
@@ -67,6 +71,8 @@ module.exports = {
 
     REDUNDANT_FOLDER_NAME: { "isSuccess": false, "code": 3010, "message": "중복된 폴더명입니다. "},
     USER_EDIT_FOLDER_TYPE_ERROR: { "isSuccess": false, "code": 3011, "message": "수정 유형을 정확하게 입력해주세요. (DELETE, EDIT)"},
+
+    SCRAP_TYPE_ERROR: { "isSuccess": false, "code": 3012, "message": "스크랩 타입을 정확하게 입력해주세요. (HOUSEWARM, PRODUCT)"},
 
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},

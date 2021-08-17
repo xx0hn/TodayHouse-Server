@@ -405,6 +405,81 @@ async function editFolder(connection, folderName, folderInfo, folderId){
   return editFolderRows;
 }
 
+//집들이 스크랩 확인
+async function selectHouseWarmById(connection, userId, id){
+  const selectHouseWarmByIdQuery=`
+    select a.id
+    from Scrap a
+           left join (select id
+                      from HouseWarm) as b
+                     on a.houseWarmId = b.id
+    where a.userId = ?
+      and a.houseWarmId = ?
+      and (a.status = 'INACTIVE' or a.status = 'DELETED');`;
+  const [houseWarmRows] = await connection.query(selectHouseWarmByIdQuery, [userId, id]);
+  return houseWarmRows;
+}
+
+//집들이 스크랩 상태 변경
+async function editScrapStatus (connection, userId, id){
+  const editScrapStatusQuery=`
+  update Scrap
+  set status = 'ACTIVE'
+  where userId = ? and houseWarmId = ?;`;
+  const [scrapRows] = await connection.query(editScrapStatusQuery, [userId, id]);
+  return scrapRows;
+}
+
+//집들이 스크랩 생성
+async function postScrap(connection, userId, id, folderId){
+  const postScrapQuery=`
+  insert into Scrap(userId, houseWarmId, folderId)
+  values(?,?,?);`;
+  const [postScrapRows] = await connection.query(postScrapQuery, [userId, id, folderId]);
+  return postScrapRows;
+}
+
+//상품 스크랩 확인
+async function selectProductById(connection, userId, id){
+  const selectProductByIdQuery=`select a.id
+from Scrap a
+left join ( select id
+                from Product ) as b
+                on a.productId = b.id
+where a.userId = ? and a.productId = ? and (a.status = 'INACTIVE' or a.status = 'DELETED');`;
+  const [productRows] = await connection.query(selectProductByIdQuery, [userId, id]);
+  return productRows;
+}
+
+//상품 스크랩 상태 수정
+async function editProductScrapStatus(connection, userId, id){
+  const editProductionScrapStatusQuery=`
+  update Scrap
+  set status ='ACTIVE'
+  where userId = ? and productId = ?;`;
+  const [editProductScrapStatusRows] = await connection.query(editProductionScrapStatusQuery, [userId, id]);
+  return editProductScrapStatusRows;
+}
+
+//상품 스크랩 생성
+async function postProductScrap(connection, userId, id, folderId){
+  const postProductScrapQuery=`
+  insert into Scrap(userId, productId, folderId)
+  values(?,?,?);`;
+  const [postProductScrapRows] = await connection.query(postProductScrapQuery, [userId, id, folderId]);
+  return postProductScrapRows;
+}
+
+//스크랩 취소
+async function patchScrap(connection, userId, scrapId){
+  const patchScrapQuery=`
+  update Scrap
+  set status = 'DELETED'
+  where userId = ? and id = ?;`;
+  const [patchScrapRows] = await connection.query(patchScrapQuery, [userId, scrapId]);
+  return patchScrapRows;
+}
+
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -434,4 +509,11 @@ module.exports = {
   postScrapFolders,
   deleteFolder,
   editFolder,
+  selectHouseWarmById,
+  editScrapStatus,
+  postScrap,
+  selectProductById,
+  editProductScrapStatus,
+  postProductScrap,
+  patchScrap,
 };

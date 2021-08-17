@@ -61,6 +61,12 @@ module.exports = function(app){
     // 8. 스크랩 폴더 수정 API
     app.patch('/app/users/:userId/scrap-folders', jwtMiddleware, user.patchScrapFolders);
 
+    // 9. 스크랩 API
+    app.post('/app/users/:userId/scraps', jwtMiddleware, user.postScrap);
+
+    // 10. 스크랩 취소 API
+    app.patch('/app/users/:userId/scraps', jwtMiddleware, user.patchScrap);
+
     //  유저 조회 API (+ 검색)
     app.get('/app/users',user.getUsers); 
 
