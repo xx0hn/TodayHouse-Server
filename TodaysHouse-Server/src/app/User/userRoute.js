@@ -79,6 +79,12 @@ module.exports = function(app){
     // 14. 좋아요 조회 API
     app.get('/app/users/:userId/likes', jwtMiddleware, user.getLike);
 
+    // 15. 팔로우 API
+    app.post('/app/users/:userId/follows', jwtMiddleware, user.postFollow);
+
+    // 16. 팔로우 취소 API
+    app.patch('/app/users/:userId/follows', jwtMiddleware, user.patchFollow);
+
 
     // 36. 이메일 중복 체크 API
     app.get('/app/emails', user.emailCheck);

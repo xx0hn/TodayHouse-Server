@@ -363,14 +363,55 @@ exports.postLike = async function (userId, houseWarmId){
 }
 
 //좋아요 취소
-exports.patchLike = async function (userId, likeId){
+exports.patchLike = async function (userId, houseWarmId){
     try{
         const connection = await pool.getConnection(async(conn)=>conn);
-        const cancelLike = await userDao.cancelLike(connection, userId, likeId);
+        const cancelLike = await userDao.cancelLike(connection, userId, houseWarmId);
         connection.release();
         return response(baseResponse.SUCCESS);
     } catch(err){
         logger.error(`App - cancelLike Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//팔로우
+exports.postFollow = async function (userId, usersId){
+    try{
+        const followRows = await userProvider.followCheck(userId, usersId);
+        if(followRows.length>0){
+            const checkFollowRows = await userProvider.followReCheck(userId, usersId);
+            if(checkFollowRows.length>0){
+                return response(baseResponse.ALREADY_FOLLOW);
+            }
+            else{
+                const connection = await pool.getConnection(async(conn)=>conn);
+                const patchFollow = await userDao.patchFollow(connection, userId, usersId);
+                connection.release();
+                return response(baseResponse.SUCCESS);
+            }
+        }
+        else{
+            const connection = await pool.getConnection(async(conn)=>conn);
+            const postFollow = await userDao.postFollow(connection, userId, usersId);
+            connection.release();
+            return response(baseResponse.SUCCESS);
+        }
+    } catch(err){
+        logger.error(`App - postFollow Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//팔로우 취소
+exports.patchFollow = async function (userId, usersId){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const patchFollow = await userDao.cancelFollow(connection, userId, usersId);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - cancelFollow Service error\n: ${err.message}`);
         return errResponse(baseResponse.DB_ERROR);
     }
 }

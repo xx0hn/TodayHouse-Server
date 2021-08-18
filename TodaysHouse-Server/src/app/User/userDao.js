@@ -91,7 +91,8 @@ async function selectUserMyPages(connection, userId){
         , a.profileImageUrl as ProfileImage
         , follower as Follower
         , following as Following
-        , countScrap as ScrapBook
+        , case when couponCount is null then 0 else couponCount end as Coupon
+        , case when countScrap is null then 0 else countScrap end as ScrapBook
         , case when countLike is null then 0 else countLike end as Likes
 from User a
 left join ( select id
@@ -127,6 +128,12 @@ left join ( select id
                     , userId
                 from Picture ) as f
                 on a.id = f.userId
+left join ( select id
+                    , userId
+                    , count(userId) as couponCount
+                from Coupon
+                group by userId) as g
+                on a.id = g.userId
 where a.id = 1
 group by a.id;`;
   const [myPageRows] = await connection.query(selectUserMypageQuery, userId);
@@ -793,12 +800,12 @@ async function postLike(connection, userId, houseWarmId){
 }
 
 //좋아요 취소
-async function cancelLike(connection, userId, likeId){
+async function cancelLike(connection, userId, houseWarmId){
   const cancelLikeQuery=`
   update Likes
   set status = 'DELETED'
-  where userId = ? and id = ?;`;
-  const [cancelLikeRows] = await connection.query(cancelLikeQuery, [userId, likeId]);
+  where userId = ? and houseWarmId = ?;`;
+  const [cancelLikeRows] = await connection.query(cancelLikeQuery, [userId, houseWarmId]);
   return cancelLikeRows;
 }
 
@@ -840,6 +847,55 @@ left join ( select id
 where a.userId = ? and a.status = 'ACTIVE';`;
   const [houseWarmLikeRows] = await connection.query(selectHouseWarmLikeQuery, userId);
   return houseWarmLikeRows;
+}
+
+//이전 팔로우 조회
+async function selectFollow(connection, userId, usersId){
+  const selectFollowQuery=`
+  select id
+from Follow
+where fromUserId = ? and toUserId = ?;`;
+  const [followRows] = await connection.query(selectFollowQuery, [userId, usersId]);
+  return followRows;
+}
+
+//이전 팔로우 유효 조회
+async function selectFollowCheck(connection, userId, usersId){
+  const selectFollowCheckQuery=`
+    select id
+from Follow
+where fromUserId = ? and toUserId = ? and status = 'ACTIVE';`;
+  const [followCheckRows] = await connection.query(selectFollowCheckQuery, [userId, usersId]);
+  return followCheckRows;
+}
+
+//취소된 팔로우 상태 수정
+async function patchFollow(connection, userId, usersId){
+  const patchFollowQuery=`
+  update Follow
+  set status = 'ACTIVE'
+  where fromUserId = ? and toUserId = ?;`;
+  const [patchFollowRows] = await connection.query(patchFollowQuery, [userId, usersId]);
+  return patchFollowRows;
+}
+
+//팔로우 처음 생성
+async function postFollow(connection, userId, usersId){
+  const postFollowQuery=`
+  insert into Follow(fromUserId, toUserId)
+  values(?,?);`;
+  const [postFollowRows] = await connection.query(postFollowQuery, [userId, usersId]);
+  return postFollowRows;
+}
+
+//팔로우 취소
+async function cancelFollow(connection, userId, usersId){
+  const cancelFollowQuery=`
+  update Follow
+  set status = 'DELETED'
+  where fromUserId = ? and toUserId = ?;`;
+  const [cancelFollowRows] = await connection.query(cancelFollowQuery, [userId, usersId]);
+  return cancelFollowRows;
 }
 
 module.exports = {
@@ -896,4 +952,9 @@ module.exports = {
   cancelLike,
   selectTotalLike,
   selectHouseWarmLike,
+  selectFollow,
+  selectFollowCheck,
+  patchFollow,
+  postFollow,
+  cancelFollow,
 };

@@ -298,3 +298,19 @@ exports.getHouseWarmLike = async function(userId){
   connection.release();
   return getHouseWarmLike;
 }
+
+//이전 팔로우 조회
+exports.followCheck = async function(userId, usersId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getFollowCheck = await userDao.selectFollow(connection, userId, usersId);
+  connection.release();
+  return getFollowCheck;
+}
+
+//이전 팔로우 유효한지 조회
+exports.followReCheck = async function(userId, usersId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getFollowReCheck = await userDao.selectFollowCheck(connection, userId, usersId);
+  connection.release();
+  return getFollowReCheck;
+}

@@ -60,6 +60,9 @@ module.exports = {
     LIKE_LIKEID_EMPTY: { "isSuccess": false, "code": 2035, "message": "좋아요 id를 입력해주세요. " },
     LIKE_TYPE_EMPTY:{ "isSuccess": false, "code": 2036, "message": "좋아요 타입를 입력해주세요. " },
 
+    FOLLOW_USER_ID_EMPTY:{ "isSuccess": false, "code": 2037, "message": "팔로우할 유저id를 입력해주세요. " },
+    FOLLOW_CANCEL_USER_ID_EMPTY:{ "isSuccess": false, "code": 2038, "message": "팔로우 취소할 유저id를 입력해주세요. " },
+
 
     // Response error
     SIGNUP_REDUNDANT_EMAIL : { "isSuccess": false, "code": 3001, "message":"중복된 이메일입니다." },
@@ -84,7 +87,7 @@ module.exports = {
     ALREADY_LIKE: { "isSuccess": false, "code": 3015, "message": "이미 좋아요를 누르셨습니다. "},
 
     LIKE_TYPE_ERROR: { "isSuccess": false, "code": 3016, "message": "좋아요 타입을 정확하게 입력해주세요. (TOTAL, HOUSEWARM) "},
-
+    ALREADY_FOLLOW: { "isSuccess": false, "code": 3017, "message": "이미 팔로우 중입니다. "},
 
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},

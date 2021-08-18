@@ -446,12 +446,12 @@ exports.postLike = async function(req, res){
 exports.patchLike = async function(req, res){
     const userIdFromJWT = req.verifiedToken.userId;
     const userId = req.params.userId;
-    const {likeId} = req.body;
+    const {houseWarmId} = req.body;
     if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
     if(userIdFromJWT!=userId)
         res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
-    if(!likeId) return res.send(response(baseResponse.LIKE_LIKEID_EMPTY));
-    const patchLike = await userService.patchLike(userId, likeId);
+    if(!houseWarmId) return res.send(response(baseResponse.HOUSE_WARM_ID_EMPTY));
+    const patchLike = await userService.patchLike(userId, houseWarmId);
     return res.send(response(patchLike));
 }
 
@@ -478,6 +478,40 @@ exports.getLike = async function(req, res){
         return res.send(response(baseResponse.SUCCESS, getHouseWarmLike));
     }
     return res.send(errResponse(baseResponse.LIKE_TYPE_ERROR));
+}
+
+/**
+ * API No. 15
+ * API Name : 팔로우 API
+ * [POST] /app/users/:userId/follows
+ */
+exports.postFollow = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {usersId} = req.body;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!usersId) return res.send(response(baseResponse.FOLLOW_USER_ID_EMPTY));
+    const postFollow = await userService.postFollow(userId, usersId);
+    return res.send(response(postFollow));
+}
+
+/**
+ * API No. 16
+ * API Name : 팔로우 취소 API
+ * [PATCH] /app/users/:userId/follows
+ */
+exports.patchFollow = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {usersId} = req.body;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!usersId) return res.send(response(baseResponse.FOLLOW_CANCEL_USER_ID_EMPTY));
+    const patchFollow = await userService.patchFollow(userId, usersId)
+    return res.send(response(patchFollow));
 }
 
 /**
