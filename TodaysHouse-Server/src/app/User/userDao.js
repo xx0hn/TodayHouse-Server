@@ -447,8 +447,22 @@ async function selectHouseWarmById(connection, userId, id){
                       from HouseWarm) as b
                      on a.houseWarmId = b.id
     where a.userId = ?
+      and a.houseWarmId = ?;`;
+  const [houseWarmRows] = await connection.query(selectHouseWarmByIdQuery, [userId, id]);
+  return houseWarmRows;
+}
+
+//집들이 스크랩 재확인
+async function selectHouseWarmCheck(connection, userId, id){
+  const selectHouseWarmByIdQuery=`
+    select a.id
+    from Scrap a
+           left join (select id
+                      from HouseWarm) as b
+                     on a.houseWarmId = b.id
+    where a.userId = ?
       and a.houseWarmId = ?
-      and (a.status = 'INACTIVE' or a.status = 'DELETED');`;
+      and a.status ='ACTIVE';`;
   const [houseWarmRows] = await connection.query(selectHouseWarmByIdQuery, [userId, id]);
   return houseWarmRows;
 }
@@ -479,7 +493,19 @@ from Scrap a
 left join ( select id
                 from Product ) as b
                 on a.productId = b.id
-where a.userId = ? and a.productId = ? and (a.status = 'INACTIVE' or a.status = 'DELETED');`;
+where a.userId = ? and a.productId = ?`;
+  const [productRows] = await connection.query(selectProductByIdQuery, [userId, id]);
+  return productRows;
+}
+
+//상품 스크랩 재확인
+async function selectProductCheck(connection, userId, id){
+  const selectProductByIdQuery=`select a.id
+from Scrap a
+left join ( select id
+                from Product ) as b
+                on a.productId = b.id
+where a.userId = ? and a.productId = ? and status = 'ACTIVE';`;
   const [productRows] = await connection.query(selectProductByIdQuery, [userId, id]);
   return productRows;
 }
@@ -727,6 +753,95 @@ where a.userId = ? and b.id is not null and a.status = 'ACTIVE';`;
   return houseWarmRows;
 }
 
+//좋아요 체크 (전에 눌렀다가 취소한 경우)
+async function selectLike(connection, userId, houseWarmId){
+  const selectLikeQuery=`
+  select id
+  from Likes
+  where userId = ? and houseWarmId = ? ;`;
+  const [likeRows] = await connection.query(selectLikeQuery, [userId, houseWarmId]);
+  return likeRows;
+}
+
+//좋아요 체크 (이미 좋아요중인 경우)
+async function selectLikeCheck(connection, userId, houseWarmId){
+  const selectLikeCheckQuery=`
+  select id
+  from Likes
+  where userId = ? and houseWarmId = ? and status = 'ACTIVE';`;
+  const [likeCheckRows] = await connection.query(selectLikeCheckQuery, [userId, houseWarmId]);
+  return likeCheckRows;
+}
+
+//좋아요 (전에 눌렀다가 취소한 경우)
+async function patchLike(connection, userId, houseWarmId){
+  const patchLikeQuery=`
+  update Likes
+  set status = 'ACTIVE'
+  where userId = ? and houseWarmId = ?;`;
+  const [patchLikeRows] = await connection.query(patchLikeQuery, [userId, houseWarmId]);
+  return patchLikeRows;
+}
+
+//좋아요 (처음인 경우)
+async function postLike(connection, userId, houseWarmId){
+  const postLikeQuery=`
+  insert into Likes(userId, houseWarmId)
+  values(?, ?);`;
+  const [postLikeRows] = await connection.query(postLikeQuery, [userId, houseWarmId]);
+  return postLikeRows;
+}
+
+//좋아요 취소
+async function cancelLike(connection, userId, likeId){
+  const cancelLikeQuery=`
+  update Likes
+  set status = 'DELETED'
+  where userId = ? and id = ?;`;
+  const [cancelLikeRows] = await connection.query(cancelLikeQuery, [userId, likeId]);
+  return cancelLikeRows;
+}
+
+//전체 좋아요 조회
+async function selectTotalLike(connection, userId){
+  const selectTotalLikeQuery=`
+  select case when a.houseWarmId is not null then '집들이' end as Type
+        , b.imageUrl as Image
+from Likes a
+left join ( select id
+                , imageUrl
+            from HouseWarm ) as b
+            on a.houseWarmId = b.id
+where a.userId = ? and a.status = 'ACTIVE';`;
+  const [likeTotalRows] = await connection.query(selectTotalLikeQuery, userId);
+  return likeTotalRows;
+}
+
+//집들이 좋아요 조회
+async function selectHouseWarmLike(connection, userId){
+  const selectHouseWarmLikeQuery=`
+  select case when a.houseWarmId is not null then '온라인 집들이' end as Type
+            , b.imageUrl as Image
+            , b.title as Title
+            , c.nickName as UserNickName
+            , c.profileImageUrl as UserProfileImage
+from Likes a
+left join ( select id
+                    , imageUrl
+                    , title
+                    , userId
+            from HouseWarm) as b
+            on a.houseWarmId = b.id
+left join ( select id
+                    , profileImageUrl
+                    , nickName
+            from User ) as c
+            on b.userId = c.id
+where a.userId = ? and a.status = 'ACTIVE';`;
+  const [houseWarmLikeRows] = await connection.query(selectHouseWarmLikeQuery, userId);
+  return houseWarmLikeRows;
+}
+
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -759,9 +874,11 @@ module.exports = {
   deleteFolder,
   editFolder,
   selectHouseWarmById,
+  selectHouseWarmCheck,
   editScrapStatus,
   postScrap,
   selectProductById,
+  selectProductCheck,
   editProductScrapStatus,
   postProductScrap,
   patchScrap,
@@ -772,4 +889,11 @@ module.exports = {
   selectProduct,
   selectProductImage,
   selectScrapHouseWarm,
+  selectLike,
+  selectLikeCheck,
+  patchLike,
+  postLike,
+  cancelLike,
+  selectTotalLike,
+  selectHouseWarmLike,
 };

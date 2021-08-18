@@ -270,10 +270,16 @@ exports.scrapHouseWarm = async function (userId, id, folderId){
     try{
         const houseWarmRows = await userProvider.checkHouseWarm(userId, id);
         if(houseWarmRows.length>0){
-            const connection = await pool.getConnection(async(conn)=>conn);
-            const editScrapStatus = await userDao.editScrapStatus(connection, userId, id);
-            connection.release();
-            return response(baseResponse.SUCCESS);
+            const houseWarmCheck = await userProvider.reCheckHouseWarm(userId, id);
+            if(houseWarmCheck.length>0){
+                return errResponse(baseResponse.ALREADY_SCRAP);
+            }
+            else {
+                const connection = await pool.getConnection(async (conn) => conn);
+                const editScrapStatus = await userDao.editScrapStatus(connection, userId, id);
+                connection.release();
+                return response(baseResponse.SUCCESS);
+            }
         }
         else{
             const connection = await pool.getConnection(async(conn)=>conn);
@@ -292,10 +298,16 @@ exports.scrapProduct = async function (userId, id, folderId){
     try{
         const productRows = await userProvider.checkProduct(userId, id);
         if(productRows.length>0){
-            const connection = await pool.getConnection(async(conn)=>conn);
-            const editScrapStatus = await userDao.editProductScrapStatus(connection, userId, id);
-            connection.release();
-            return response(baseResponse.SUCCESS);
+            const productCheck = await userProvider.reCheckProduct(userId, id);
+            if(productCheck.length>0){
+                return errResponse(baseResponse.ALREADY_SCRAP);
+            }
+            else {
+                const connection = await pool.getConnection(async (conn) => conn);
+                const editScrapStatus = await userDao.editProductScrapStatus(connection, userId, id);
+                connection.release();
+                return response(baseResponse.SUCCESS);
+            }
         }
         else{
             const connection = await pool.getConnection(async(conn)=>conn);
@@ -318,6 +330,47 @@ exports.patchScrap = async function (userId, scrapId){
         return response(baseResponse.SUCCESS);
     } catch(err){
         logger.error(`App - cancelScrap Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//좋아요
+exports.postLike = async function (userId, houseWarmId){
+    try{
+        const likeRows = await userProvider.likeCheck(userId, houseWarmId);
+        if(likeRows.length>0){
+            const checkLikeRows = await userProvider.likeReCheck(userId, houseWarmId);
+            if(checkLikeRows.length>0){
+                return errResponse(baseResponse.ALREADY_LIKE);
+            }
+            else {
+                const connection = await pool.getConnection(async (conn) => conn);
+                const patchLike = await userDao.patchLike(connection, userId, houseWarmId);
+                connection.release();
+                return response(baseResponse.SUCCESS);
+            }
+        }
+        else{
+            const connection = await pool.getConnection(async (conn) => conn);
+            const postLike = await userDao.postLike(connection, userId, houseWarmId);
+            connection.release();
+            return response(baseResponse.SUCCESS);
+        }
+    }catch(err) {
+        logger.error(`App - likeService error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//좋아요 취소
+exports.patchLike = async function (userId, likeId){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const cancelLike = await userDao.cancelLike(connection, userId, likeId);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - cancelLike Service error\n: ${err.message}`);
         return errResponse(baseResponse.DB_ERROR);
     }
 }

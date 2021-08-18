@@ -187,10 +187,26 @@ exports.checkHouseWarm = async function(userId, id){
   return checkHouseWarm;
 }
 
+//집들이 스크랩 재확인
+exports.reCheckHouseWarm = async function(userId, id){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const checkHouseWarm = await userDao.selectHouseWarmCheck(connection, userId, id);
+  connection.release();
+  return checkHouseWarm;
+}
+
 //상품 스크랩 확인
 exports.checkProduct = async function(userId, id){
   const connection = await pool.getConnection(async(conn)=>conn);
   const checkProduct = await userDao.selectProductById(connection, userId, id);
+  connection.release();
+  return checkProduct;
+}
+
+//상품 스크랩 재확인
+exports.reCheckProduct = async function(userId, id){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const checkProduct = await userDao.selectProductCheck(connection, userId, id);
   connection.release();
   return checkProduct;
 }
@@ -249,4 +265,36 @@ exports.getScrapHouseWarm = async function(userId){
   const getHouseWarm = await userDao.selectScrapHouseWarm(connection, userId);
   connection.release();
   return getHouseWarm;
+}
+
+//좋아요 체크 (전에 눌렀다가 취소한 경우)
+exports.likeCheck = async function (userId, houseWarmId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const likeCheck = await userDao.selectLike(connection, userId, houseWarmId);
+  connection.release();
+  return likeCheck;
+}
+
+//좋아요 체크 (이미 좋아요중인 경우)
+exports.likeReCheck = async function(userId, houseWarmId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const likeReCheck = await userDao.selectLikeCheck(connection, userId, houseWarmId);
+  connection.release();
+  return likeReCheck;
+}
+
+//전체 좋아요 조회
+exports.getTotalLike = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getTotalLike = await userDao.selectTotalLike(connection, userId);
+  connection.release();
+  return getTotalLike;
+}
+
+//집들이 좋아요 조회
+exports.getHouseWarmLike = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getHouseWarmLike = await userDao.selectHouseWarmLike(connection, userId);
+  connection.release();
+  return getHouseWarmLike;
 }

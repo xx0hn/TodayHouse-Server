@@ -41,8 +41,8 @@ module.exports = {
     USER_ACCESS_TOKEN_WRONG: { "isSuccess": false, "code": 2023, "message": "Access Token이 잘못되었습니다. " },
     USER_INFO_EMPTY: { "isSuccess": false, "code": 2024, "message": "유저 정보를 입력해주세요. " },
 
-    USER_EDIT_TYPE_EMTPY: { "isSuccess": false, "code": 2025, "message": "수정할 유저 정보의 타입을 입력해주세요. " },
-    USER_EDIT_INFO_EMTPY: { "isSuccess": false, "code": 2026, "message": "수정할 유저의 정보를 입력해주세요. " },
+    USER_EDIT_TYPE_EMPTY: { "isSuccess": false, "code": 2025, "message": "수정할 유저 정보의 타입을 입력해주세요. " },
+    USER_EDIT_INFO_EMPTY: { "isSuccess": false, "code": 2026, "message": "수정할 유저의 정보를 입력해주세요. " },
 
     SCRAP_FOLDER_NAME_EMPTY: { "isSuccess": false, "code": 2027, "message": "스크랩 폴더명을 입력해주세요. " },
 
@@ -55,7 +55,10 @@ module.exports = {
 
     SCRAP_BOOK_TYPE_EMPTY: { "isSuccess": false, "code": 2033, "message": "스크랩북 타입을 입력해주세요. " },
 
+    HOUSE_WARM_ID_EMPTY: { "isSuccess": false, "code": 2034, "message": "집들이 id를 입력해주세요. " },
 
+    LIKE_LIKEID_EMPTY: { "isSuccess": false, "code": 2035, "message": "좋아요 id를 입력해주세요. " },
+    LIKE_TYPE_EMPTY:{ "isSuccess": false, "code": 2036, "message": "좋아요 타입를 입력해주세요. " },
 
 
     // Response error
@@ -75,6 +78,14 @@ module.exports = {
 
     SCRAP_TYPE_ERROR: { "isSuccess": false, "code": 3012, "message": "스크랩 타입을 정확하게 입력해주세요. (HOUSEWARM, PRODUCT)"},
     SCRAP_BOOK_TYPE_ERROR: { "isSuccess": false, "code": 3013, "message": "스크랩북 타입을 정확하게 입력해주세요. (TOTAL, FOLDER, PRODUCT, HOUSEWARM)"},
+
+    ALREADY_SCRAP: { "isSuccess": false, "code": 3014, "message": "이미 스크랩 하셨습니다. "},
+
+    ALREADY_LIKE: { "isSuccess": false, "code": 3015, "message": "이미 좋아요를 누르셨습니다. "},
+
+    LIKE_TYPE_ERROR: { "isSuccess": false, "code": 3016, "message": "좋아요 타입을 정확하게 입력해주세요. (TOTAL, HOUSEWARM) "},
+
+
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},
     SERVER_ERROR : { "isSuccess": false, "code": 4001, "message": "서버 에러"},

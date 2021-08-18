@@ -70,9 +70,14 @@ module.exports = function(app){
     // 11. 스크랩 조회 API
     app.get('/app/users/:userId/scraps', jwtMiddleware, user.getScrap);
 
+    // 12. 좋아요 API
+    app.post('/app/users/:userId/likes', jwtMiddleware, user.postLike);
 
+    // 13. 좋아요 취소 API
+    app.patch('/app/users/:userId/likes', jwtMiddleware, user.patchLike);
 
-
+    // 14. 좋아요 조회 API
+    app.get('/app/users/:userId/likes', jwtMiddleware, user.getLike);
 
 
     // 36. 이메일 중복 체크 API

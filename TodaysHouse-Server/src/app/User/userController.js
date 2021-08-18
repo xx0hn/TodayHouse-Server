@@ -247,25 +247,25 @@ exports.patchProfiles = async function(req, res) {
     if (!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
     if (userIdFromJWT != userId)
         res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
-    if (!type) return res.send(response(baseResponse.USER_EDIT_TYPE_EMTPY));
+    if (!type) return res.send(response(baseResponse.USER_EDIT_TYPE_EMPTY));
     if (type === 'PROFILE_IMAGE') {
-        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMTPY));
+        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMPTY));
         const patchProfileImage = await userService.patchProfileImage(editInfo, userId);
         return res.send(response(patchProfileImage));
     } else if (type === 'BACKGROUND_IMAGE') {
-        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMTPY));
+        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMPTY));
         const patchBackgroundImage = await userService.patchBackgroundImage(editInfo, userId);
         return res.send(response(patchBackgroundImage));
     } else if (type === 'NICKNAME') {
-        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMTPY));
+        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMPTY));
         const patchNickName = await userService.patchNickName(editInfo, userId);
         return res.send(response(patchNickName));
     } else if (type === 'MY_URL') {
-        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMTPY));
+        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMPTY));
         const patchMyUrl = await userService.patchMyUrl(editInfo, userId);
         return res.send(response(patchMyUrl));
     } else if (type === 'INTRO') {
-        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMTPY));
+        if (!editInfo) return res.send(response(baseResponse.USER_EDIT_INFO_EMPTY));
         const patchIntro = await userService.patchIntro(editInfo, userId);
         return res.send(response(patchIntro));
     }
@@ -419,6 +419,66 @@ exports.getScrap = async function(req, res){
     return res.send(response(baseResponse.SCRAP_BOOK_TYPE_ERROR));
 }
 
+
+/**
+ * API No. 12
+ * API Name : 좋아요 API
+ * [POST] /app/users/:userId/likes
+ */
+exports.postLike = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {houseWarmId} = req.body;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!houseWarmId) return res.send(response(baseResponse.HOUSE_WARM_ID_EMPTY));
+    const postLike = await userService.postLike(userId, houseWarmId);
+    return res.send(response(postLike));
+
+}
+
+/**
+ * API No. 13
+ * API Name : 좋아요 취소 API
+ * [PATCH] /app/users/:userId/likes
+ */
+exports.patchLike = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {likeId} = req.body;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!likeId) return res.send(response(baseResponse.LIKE_LIKEID_EMPTY));
+    const patchLike = await userService.patchLike(userId, likeId);
+    return res.send(response(patchLike));
+}
+
+
+/**
+ * API No. 14
+ * API Name : 좋아요 조회 API
+ * [GET] /app/users/:userId/likes
+ */
+exports.getLike = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {type} = req.query;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!type) return res.send(response(baseResponse.LIKE_TYPE_EMPTY));
+    if(type==='TOTAL'){
+        const getTotalLike = await userProvider.getTotalLike(userId);
+        return res.send(response(baseResponse.SUCCESS, getTotalLike));
+    }
+    else if(type==='HOUSEWARM'){
+        const getHouseWarmLike = await userProvider.getHouseWarmLike(userId);
+        return res.send(response(baseResponse.SUCCESS, getHouseWarmLike));
+    }
+    return res.send(errResponse(baseResponse.LIKE_TYPE_ERROR));
+}
 
 /**
  * API No.
