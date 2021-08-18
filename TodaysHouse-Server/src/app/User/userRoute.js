@@ -70,8 +70,6 @@ module.exports = function(app){
     // 11. 좋아요 API
     app.post('/app/users/:userId/likes', jwtMiddleware, user.postLike);
 
-    // 13. 좋아요 취소 API
-    app.patch('/app/users/:userId/likes', jwtMiddleware, user.patchLike);
 
     // 12. 좋아요 조회 API
     app.get('/app/users/:userId/likes', jwtMiddleware, user.getLike);
@@ -79,8 +77,11 @@ module.exports = function(app){
     // 13. 팔로우 API
     app.post('/app/users/:userId/follows', jwtMiddleware, user.postFollow);
 
-    // 16. 팔로우 취소 API
-    app.patch('/app/users/:userId/follows', jwtMiddleware, user.patchFollow);
+    // 14. 팔로우 조회 API
+    app.get('/app/users/:userId/follows', user.getFollow);
+
+    // 15. 댓글 달기 API
+    app.post('/app/users/:userId/comments', jwtMiddleware, user.postComment);
 
 
     // 33. 이메일 중복 체크 API

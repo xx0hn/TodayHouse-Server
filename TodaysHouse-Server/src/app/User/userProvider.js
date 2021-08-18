@@ -314,3 +314,19 @@ exports.followReCheck = async function(userId, usersId){
   connection.release();
   return getFollowReCheck;
 }
+
+//팔로워 조회
+exports.getFollower = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getFollower = await userDao.selectFollower(connection, userId);
+  connection.release();
+  return getFollower;
+}
+
+//팔로잉 조회
+exports.getFollowing = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getFollowing = await userDao.selectFollowing(connection, userId);
+  connection.release();
+  return getFollowing;
+}

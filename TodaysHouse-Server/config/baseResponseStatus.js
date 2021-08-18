@@ -62,6 +62,12 @@ module.exports = {
 
     FOLLOW_USER_ID_EMPTY:{ "isSuccess": false, "code": 2037, "message": "팔로우할 유저id를 입력해주세요. " },
     FOLLOW_CANCEL_USER_ID_EMPTY:{ "isSuccess": false, "code": 2038, "message": "팔로우 취소할 유저id를 입력해주세요. " },
+    FOLLOW_TYPE_EMPTY:{ "isSuccess": false, "code": 2039, "message": "팔로우 타입을 입력해주세요. " },
+
+    COMMENT_TYPE_EMPTY:{ "isSuccess": false, "code": 2040, "message": "댓글 타입을 입력해주세요. " },
+
+    COMMENT_ID_EMPTY:{ "isSuccess": false, "code": 2041, "message": "댓글id를 입력해주세요. " },
+    COMMENT_CONTENT_EMPTY:{ "isSuccess": false, "code": 2042, "message": "댓글 내용을 입력해주세요. " },
 
 
     // Response error
@@ -89,6 +95,9 @@ module.exports = {
     LIKE_TYPE_ERROR: { "isSuccess": false, "code": 3016, "message": "좋아요 타입을 정확하게 입력해주세요. (TOTAL, HOUSEWARM) "},
     ALREADY_FOLLOW: { "isSuccess": false, "code": 3017, "message": "이미 팔로우 중입니다. "},
 
+    FOLLOW_TYPE_ERROR: { "isSuccess": false, "code": 3018, "message": "팔로우 타입을 정확하게 입력해주세요. (FOLLOWER, FOLLOWING) "},
+
+    COMMENT_TYPE_ERROR: { "isSuccess": false, "code": 3019, "message": "댓글 타입을 정확하게 입력해주세요. (COMMENT, REPLY) "},
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},
     SERVER_ERROR : { "isSuccess": false, "code": 4001, "message": "서버 에러"},

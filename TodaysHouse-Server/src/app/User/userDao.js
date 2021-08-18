@@ -909,6 +909,60 @@ async function cancelFollow(connection, userId, usersId){
   return cancelFollowRows;
 }
 
+//팔로워 조회
+async function selectFollower(connection, userId){
+  const selectFollowerQuery=`
+  select b.id as UserId
+        , b.nickName as UserNickName
+        , b.profileImageUrl as ProfileImage
+from Follow a
+left join ( select id
+                    , nickName
+                    , profileImageUrl
+            from User ) as b
+            on a.fromUserId = b.id
+where a.toUserId = ? and a.status = 'ACTIVE';`;
+  const [followerRows] = await connection.query(selectFollowerQuery, userId);
+  return followerRows;
+}
+
+//팔로잉 조회
+async function selectFollowing(connection, userId){
+  const selectFollowingQuery=`
+    select b.id              as UserId
+         , b.nickName        as UserNickName
+         , b.profileImageUrl as ProfileImage
+    from Follow a
+           left join (select id
+                           , nickName
+                           , profileImageUrl
+                      from User) as b
+                     on a.toUserId = b.id
+    where a.fromUserId = ?
+      and a.status = 'ACTIVE';`;
+  const [followingRows] = await connection.query(selectFollowingQuery, userId);
+  return followingRows;
+}
+
+//댓글 달기
+async function postComment (connection, userId, id, contents){
+  const postCommentQuery=`
+  insert into Comment(userId, houseWarmId, contents)
+  values(?,?,?);`;
+  const [commentRows] = await connection.query(postCommentQuery, [userId, id, contents]);
+  return commentRows;
+}
+
+//대댓글 달기
+async function postReply(connection, userId, id, contents){
+  const postReplyQuery=`
+  insert into CommentReply(userId, commentId, contents)
+  values(?,?,?);`;
+  const [replyRows] = await connection.query(postReplyQuery, [userId, id, contents]);
+  return replyRows;
+}
+
+
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -969,4 +1023,8 @@ module.exports = {
   patchFollow,
   postFollow,
   cancelFollow,
+  selectFollower,
+  selectFollowing,
+  postComment,
+  postReply,
 };

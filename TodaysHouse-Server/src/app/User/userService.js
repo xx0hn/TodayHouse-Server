@@ -391,15 +391,28 @@ exports.postFollow = async function (userId, usersId){
     }
 }
 
-//팔로우 취소
-exports.patchFollow = async function (userId, usersId){
+//댓글 달기
+exports.postComment = async function(userId, id, contents){
     try{
         const connection = await pool.getConnection(async(conn)=>conn);
-        const patchFollow = await userDao.cancelFollow(connection, userId, usersId);
+        const postComment = await userDao.postComment(connection, userId, id, contents);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch (err){
+        logger.error(`App - postComment Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//대댓글 달기
+exports.postReply = async function (userId, id, contents){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const postReply = await userDao.postReply(connection, userId, id, contents);
         connection.release();
         return response(baseResponse.SUCCESS);
     } catch(err){
-        logger.error(`App - cancelFollow Service error\n: ${err.message}`);
+        logger.error(`App - postReplyComment Service error\n: ${err.message}`);
         return errResponse(baseResponse.DB_ERROR);
     }
 }

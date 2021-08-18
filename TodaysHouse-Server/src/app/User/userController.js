@@ -423,23 +423,6 @@ exports.postLike = async function(req, res){
 
 }
 
-/**
- * API No. 13
- * API Name : 좋아요 취소 API
- * [PATCH] /app/users/:userId/likes
- */
-exports.patchLike = async function(req, res){
-    const userIdFromJWT = req.verifiedToken.userId;
-    const userId = req.params.userId;
-    const {houseWarmId} = req.body;
-    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
-    if(userIdFromJWT!=userId)
-        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
-    if(!houseWarmId) return res.send(response(baseResponse.HOUSE_WARM_ID_EMPTY));
-    const patchLike = await userService.patchLike(userId, houseWarmId);
-    return res.send(response(patchLike));
-}
-
 
 /**
  * API No. 12
@@ -482,21 +465,54 @@ exports.postFollow = async function(req, res){
     return res.send(response(postFollow));
 }
 
+
 /**
- * API No. 16
- * API Name : 팔로우 취소 API
- * [PATCH] /app/users/:userId/follows
+ * API No. 14
+ * API Name : 팔로우 조회 API
+ * [GET] /app/users/:userId/follows
  */
-exports.patchFollow = async function(req, res){
+exports.getFollow = async function(req, res){
+    const userId = req.params.userId;
+    const {type} = req.query;
+    if(!userId)  return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(!type)  return res.send(response(baseResponse.FOLLOW_TYPE_EMPTY));
+    if(type==='FOLLOWER'){
+        const getFollower = await userProvider.getFollower(userId);
+        return res.send(response(baseResponse.SUCCESS, getFollower));
+    }
+    else if(type==='FOLLOWING'){
+        const getFollowing = await userProvider.getFollowing(userId);
+        return res.send(response(baseResponse.SUCCESS, getFollowing));
+    }
+    return res.send(errResponse(baseResponse.FOLLOW_TYPE_ERROR));
+}
+
+/**
+ * API No. 15
+ * API Name : 댓글 달기 API
+ * [POST] /app/users/:userId/comments
+ */
+exports.postComment = async function(req, res){
     const userIdFromJWT = req.verifiedToken.userId;
     const userId = req.params.userId;
-    const {usersId} = req.body;
+    const {type, id} = req.query;
+    const {contents} = req.body;
     if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
     if(userIdFromJWT!=userId)
         res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
-    if(!usersId) return res.send(response(baseResponse.FOLLOW_CANCEL_USER_ID_EMPTY));
-    const patchFollow = await userService.patchFollow(userId, usersId)
-    return res.send(response(patchFollow));
+    if(!type) return res.send(response(baseResponse.COMMENT_TYPE_EMPTY));
+    if(!contents) return res.send(response(baseResponse.COMMENT_CONTENT_EMPTY));
+    if(type===`COMMENT`){
+        if(!id) return res.send(response(baseResponse.HOUSE_WARM_ID_EMPTY));
+        const postComment = await userService.postComment(userId, id, contents);
+        return res.send(response(postComment));
+    }
+    else if(type==='REPLY'){
+        if(!id) return res.send(response(baseResponse.COMMENT_ID_EMPTY));
+        const postReply = await userService.postReply(userId, id, contents);
+        return res.send(response(postReply));
+    }
+    return res.send(errResponse(baseResponse.COMMENT_TYPE_ERROR));
 }
 
 /**
