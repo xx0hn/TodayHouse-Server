@@ -67,6 +67,23 @@ module.exports = function(app){
     // 10. 스크랩 취소 API
     app.patch('/app/users/:userId/scraps', jwtMiddleware, user.patchScrap);
 
+    // 11. 스크랩 조회 API
+    app.get('/app/users/:userId/scraps', jwtMiddleware, user.getScrap);
+
+
+
+
+
+
+    // 36. 이메일 중복 체크 API
+    app.get('/app/emails', user.emailCheck);
+
+    // 37. 닉네임 중복 체크 API
+    app.get('/app/nicknames', user.nicknameCheck);
+
+    // 38. 확인 비밀번호 체크 API
+    app.get('/app/passwords', user.passwordCheck);
+
     //  유저 조회 API (+ 검색)
     app.get('/app/users',user.getUsers); 
 

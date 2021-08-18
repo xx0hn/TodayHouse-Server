@@ -53,6 +53,7 @@ module.exports = {
     SCRAP_ID_EMPTY: { "isSuccess": false, "code": 2031, "message": "스크랩할 id를 입력해주세요. " },
     SCRAP_SCRAPID_EMPTY: { "isSuccess": false, "code": 2032, "message": "스크랩 id를 입력해주세요. " },
 
+    SCRAP_BOOK_TYPE_EMPTY: { "isSuccess": false, "code": 2033, "message": "스크랩북 타입을 입력해주세요. " },
 
 
 
@@ -73,7 +74,7 @@ module.exports = {
     USER_EDIT_FOLDER_TYPE_ERROR: { "isSuccess": false, "code": 3011, "message": "수정 유형을 정확하게 입력해주세요. (DELETE, EDIT)"},
 
     SCRAP_TYPE_ERROR: { "isSuccess": false, "code": 3012, "message": "스크랩 타입을 정확하게 입력해주세요. (HOUSEWARM, PRODUCT)"},
-
+    SCRAP_BOOK_TYPE_ERROR: { "isSuccess": false, "code": 3013, "message": "스크랩북 타입을 정확하게 입력해주세요. (TOTAL, FOLDER, PRODUCT, HOUSEWARM)"},
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},
     SERVER_ERROR : { "isSuccess": false, "code": 4001, "message": "서버 에러"},

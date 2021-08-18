@@ -75,12 +75,28 @@ exports.getMyPages = async function(userId){
   return selectMyPages;
 }
 
+//마이페이지 공간 이름 전체
+exports.spaceTotal = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const printTotal = await userDao.printTotal(connection, userId);
+  connection.release();
+  return printTotal;
+}
+
 //마이페이지 유저 사진 조회
 exports.getPictures = async function(userId){
   const connection = await pool.getConnection(async(conn)=>conn);
   const selectPictures = await userDao.selectUserPictures(connection, userId);
   connection.release();
   return selectPictures;
+}
+
+//마이페이지 공간 이름 조회
+exports.getPicturesSpace = async function(spaceId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const selectPicturesSpace = await userDao.selectPicturesSpace(connection, spaceId);
+  connection.release();
+  return selectPicturesSpace;
 }
 
 //마이페이지 유저 사진 조회 (공간 별)
@@ -177,4 +193,60 @@ exports.checkProduct = async function(userId, id){
   const checkProduct = await userDao.selectProductById(connection, userId, id);
   connection.release();
   return checkProduct;
+}
+
+//스크랩 전체 조회
+exports.getTotalScrap = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getTotalScrap = await userDao.selectTotalScrap(connection, userId);
+  connection.release();
+  return getTotalScrap;
+}
+
+//스크랩 폴더 조회
+exports.getFolder = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getFolder = await userDao.selectFolder(connection, userId);
+  connection.release();
+  return getFolder;
+}
+
+//스크랩 폴더 이미지 조회
+exports.getFolderImage = async function(userId, folderId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getFolderImage = await userDao.selectFolderImage(connection, userId, folderId);
+  connection.release();
+  return getFolderImage;
+}
+
+//스크랩 상품 전체 조회
+exports.getTotalProduct = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getTotalProduct = await userDao.selectTotalProduct(connection, userId);
+  connection.release();
+  return getTotalProduct;
+}
+
+//스크랩 상품 카테고리별 조회
+exports.getProduct = async function(userId, categoryId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getProduct = await userDao.selectProduct(connection, userId, categoryId);
+  connection.release();
+  return getProduct;
+}
+
+//상품 대표이미지 조회
+exports.getProductImage = async function(productId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getProductImage = await userDao.selectProductImage(connection, productId);
+  connection.release();
+  return getProductImage;
+}
+
+//스크랩 집들이 조회
+exports.getScrapHouseWarm = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getHouseWarm = await userDao.selectScrapHouseWarm(connection, userId);
+  connection.release();
+  return getHouseWarm;
 }

@@ -133,10 +133,20 @@ group by a.id;`;
   return myPageRows;
 }
 
+//전체 출력
+async function printTotal(connection, userId){
+  const printTotalQuery=`
+  select case when id is not null then '전체' end as SpaceName
+  from User 
+  where id = ?;`;
+  const [totalRows] = await connection.query(printTotalQuery, userId);
+  return totalRows;
+}
+
 //유저 사진 조회
 async function selectUserPictures(connection, userId){
   const selectUserPicturesQuery=`
-  select imageUrl
+  select imageUrl as Image
 from PictureContents a
 left join ( select id
                     , userId
@@ -148,11 +158,20 @@ order by createdAt desc limit 1;`;
   return pictureRows;
 }
 
+//사진 공간
+async function selectPicturesSpace(connection, spaceId){
+  const selectPicturesSpaceQuery=`
+  select name as SpaceName
+  from Space
+  where id = ?;`;
+  const [picturesSpaceRows] = await connection.query(selectPicturesSpaceQuery, spaceId);
+  return picturesSpaceRows;
+}
+
 //유저 사진 조회(공간 별)
 async function selectSpacePictures(connection, userId, spaceId){
   const selectSpacePicturesQuery=`
-  select d.name as SpaceName
-        , imageUrl as Image 
+  select imageUrl as Image 
 from PictureContents a
 left join ( select id
                     , userId
@@ -175,30 +194,44 @@ order by createdAt desc limit 1;`;
 //마이페이지 스크랩북 조회
 async function selectScrapBook (connection, userId){
   const selectScrapBookQuery=`
-  select case when a.houseWarmId is not null or a.proHouseWarmId is not null then '집들이'  when a.pictureId is not null then '사진' when a.knowHowId is not null then '노하우' end as Type
-        , case when a.houseWarmId is not null then b.imageUrl when a.proHouseWarmId is not null then e.imageUrl when a.pictureId is not null then d.imageUrl when a.knowHowId is not null then f.imageUrl end as Image
+  select case when a.houseWarmId is not null or a.proHouseWarmId is not null then '집들이'  when a.pictureId is not null then '사진' when a.knowHowId is not null then '노하우'when a.productId is not null then '상품' end as Type
+        , case when a.houseWarmId is not null then b.imageUrl when a.proHouseWarmId is not null then e.imageUrl when a.pictureId is not null then d.imageUrl when a.knowHowId is not null then f.imageUrl when a.productId is not null then h.imageUrl end as Image
 from Scrap a
 left join ( select id
                 , imageUrl
-                from HouseWarm ) as b
+                from HouseWarm 
+                group by id ) as b
                 on a.houseWarmId = b.id
 left join ( select id
-                from Picture ) as c
+                from Picture 
+                group by id ) as c
                 on a.pictureId = c.id
 left join ( select id
                     , pictureId
                     , imageUrl
-                from PictureContents ) as d
+                from PictureContents 
+                group by pictureId) as d
                 on c.id = d.pictureId
 left join ( select id
                     , imageUrl
-                from ProHouseWarming ) as e
+                from ProHouseWarming 
+                group by id ) as e
                 on a.proHouseWarmId = e.id
 left join ( select id
                     , imageUrl
-                from KnowHow ) as f
+                from KnowHow 
+                group by id ) as f
                 on a.knowHowId = f.id
-where userId = ?
+left join ( select id
+                from Product ) as g
+                on a.productId = g.id
+left join ( select id
+                    , productId
+                    , imageUrl
+                from ProductImageUrl
+                order by createdAt desc limit 1) as h
+                on g.id = h.productId
+where userId = ? and a.id is not null and a.status = 'ACTIVE'
 order by createdAt desc limit 9;`;
   const [scrapBookRows] = await connection.query(selectScrapBookQuery, userId);
   return scrapBookRows;
@@ -480,6 +513,220 @@ async function patchScrap(connection, userId, scrapId){
   return patchScrapRows;
 }
 
+//스크랩 전체 조회
+async function selectTotalScrap(connection, userId){
+  const selectTotalScrapQuery=`
+  select case when a.houseWarmId is not null then '집들이' when a.productId is not null then '상품' when a.pictureId is not null then '사진' end as Type
+\t\t, case when a.houseWarmId is not null then b.imageUrl when a.productId is not null then d.imageUrl when a.pictureId is not null then f.imageUrl end as Image
+from Scrap a
+left join ( select id
+                    , imageUrl
+                from HouseWarm ) as b
+                on a.houseWarmId = b.id
+left join ( select id
+                from Product ) as c
+                on a.productId = c.id
+left join ( select id
+                , productId
+                , imageUrl
+                from ProductImageUrl 
+                group by productId ) as d
+                on c.id = d.productId
+left join ( select id
+                from Picture ) as e
+                on a.pictureId = e.id
+left join ( select id
+                , imageUrl
+                , pictureId
+                from PictureContents 
+                group by pictureId) as f
+                on e.id = f.pictureId
+where a.userId = ? and a.status = 'ACTIVE';`;
+  const [totalScrapRows] = await connection.query(selectTotalScrapQuery, userId);
+  return totalScrapRows;
+}
+
+//스크랩 폴더 조회
+async function selectFolder(connection, userId){
+  const selectFolderQuery=`
+  select a.id as id
+        , a.name as FolderName
+        , case when countScrap is null then 0 else countScrap end as ScrapCount
+from Folder a
+left join ( select id
+                    , userId
+                    , folderId
+                    , houseWarmId
+                    , productId
+                    , pictureId
+                    , count(folderId) as countScrap
+            from Scrap
+            group by folderId ) as b
+            on a.id = b.folderId
+where a.userId = ? and a.status = 'ACTIVE';`;
+  const [folderRows] = await connection.query(selectFolderQuery, userId);
+  return folderRows;
+}
+
+//스크랩 폴더 이미지 조회
+async function selectFolderImage(connection, userId, folderId){
+  const selectFolderImageQuery=`
+  select case when a.houseWarmId is not null then c.imageUrl when a.productId is not null then e.imageUrl when a.pictureId is not null then g.imageUrl end as Image
+from Scrap a
+left join ( select id
+            from Folder ) as b
+            on a.folderId = b.id
+left join ( select id
+                , imageUrl
+            from HouseWarm ) as c
+            on a.houseWarmId = c.id
+left join ( select id
+            from Product ) as d
+            on a.productId = d.id
+left join ( select id
+                , productId
+                , imageUrl
+            from ProductImageUrl 
+            group by productId ) as e
+            on d.id = e.productId
+left join ( select id
+                from Picture ) as f
+                on a.pictureId = f.id
+left join ( select id
+                , imageUrl
+                , pictureId
+                from PictureContents 
+                group by pictureId) as g
+                on f.id = g.pictureId
+where a.userId = ? and a.folderId = ? and a.status = 'ACTIVE'
+order by a.createdAt desc limit 1;`;
+  const [folderImageRows] = await connection.query(selectFolderImageQuery, [userId, folderId]);
+  return folderImageRows;
+}
+
+//스크랩 상품 전체 조회
+async function selectTotalProduct(connection, userId){
+  const selectTotalProductQuery=`
+  select a.productId as id
+        , c.name as BrandName
+        , b.name as ProductName
+        , case when b.discount is not null then concat(b.discount, '%') end as Discount
+        , format(b.saleCost, 0) as Cost
+        , case when starGrade is null then 0 else starGrade end as StarGrade
+        , case when countReview is null then 0 else countReview end as ReviewCount
+        , case when e.delCost = 0 then '무료배송' end as DeliveryCost
+        , case when b.discount is not null then '특가' end as CostType
+from Scrap a
+left join ( select id
+                , name
+                , brandId
+                , largeCategoryId
+                , delInfoId
+                , cost
+                , saleCost
+                , discount
+            from Product ) as b
+            on a.productId = b.id
+left join ( select id
+                , name
+            from Brand ) as c
+            on b.brandId = c.id
+left join ( select id
+                , productId
+                , starPoint
+                , round(sum(starPoint)/count(productId), 1) as 'starGrade'
+                , count(productId) as 'countReview'
+            from ProductReview 
+            group by productId) as d
+            on a.productId = d.productId
+left join ( select id
+                , delCost
+            from DeliveryInfo ) as e
+            on b.delInfoId = e.id 
+where a.userId = ? and a.productId is not null and a.status = 'ACTIVE'`;
+  const [totalProductRows] = await connection.query(selectTotalProductQuery, userId);
+  return totalProductRows;
+}
+
+//스크랩 상품 카테고리별 조회
+async function selectProduct(connection, userId, categoryId){
+  const selectProductQuery=`
+  select a.productId as id
+        , c.name as BrandName
+        , b.name as ProductName
+        , case when b.discount is not null then concat(b.discount, '%') end as Discount
+        , format(b.saleCost, 0) as Cost
+        , case when starGrade is null then 0 else starGrade end as StarGrade
+        , case when countReview is null then 0 else countReview end as ReviewCount
+        , case when e.delCost = 0 then '무료배송' end as DeliveryCost
+        , case when b.discount is not null then '특가' end as CostType
+from Scrap a
+left join ( select id
+                , name
+                , brandId
+                , largeCategoryId
+                , delInfoId
+                , cost
+                , saleCost
+                , discount
+            from Product ) as b
+            on a.productId = b.id
+left join ( select id
+                , name
+            from Brand ) as c
+            on b.brandId = c.id
+left join ( select id
+                , productId
+                , starPoint
+                , round(sum(starPoint)/count(productId), 1) as 'starGrade'
+                , count(productId) as 'countReview'
+            from ProductReview 
+            group by productId) as d
+            on a.productId = d.productId
+left join ( select id
+                , delCost
+            from DeliveryInfo ) as e
+            on b.delInfoId = e.id 
+where a.userId = ? and b.largeCategoryId = ? and a.productId is not null and a.status = 'ACTIVE'`;
+  const [scrapProductRows] = await connection.query(selectProductQuery, [userId, categoryId]);
+  return scrapProductRows;
+}
+
+//상품 대표 이미지 조회
+async function selectProductImage(connection, productId){
+  const selectProductImageQuery=`
+  select imageUrl
+  from ProductImageUrl
+  where productId = ?
+  order by createdAt desc limit 1;`;
+  const [productImageRows] = await connection.query(selectProductImageQuery, productId);
+  return productImageRows;
+}
+
+//스크랩 집들이 조회
+async function selectScrapHouseWarm(connection, userId){
+  const selectScrapHouseWarmQuery=`
+  select b.id as id
+        , b.imageUrl as Image
+        , case when a.houseWarmId is not null then '온라인 집들이' end as Type
+        , b.title as Title
+        , c.nickName as UserNickName
+from Scrap a
+left join ( select id
+                    , title
+                    , userId
+                    , imageUrl
+            from HouseWarm ) as b
+            on a.houseWarmId = b.id
+left join ( select id
+                    , nickName
+            from User ) as c
+            on b.userId = c.id
+where a.userId = ? and b.id is not null and a.status = 'ACTIVE';`;
+  const [houseWarmRows] = await connection.query(selectScrapHouseWarmQuery, userId);
+  return houseWarmRows;
+}
+
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -497,7 +744,9 @@ module.exports = {
   countScrapBook,
   countHouseWarm,
   countKnowHow,
+  printTotal,
   selectUserPageInfo,
+  selectPicturesSpace,
   countPictures,
   insertSocialUserInfo,
   patchProfileImage,
@@ -516,4 +765,11 @@ module.exports = {
   editProductScrapStatus,
   postProductScrap,
   patchScrap,
+  selectTotalScrap,
+  selectFolder,
+  selectFolderImage,
+  selectTotalProduct,
+  selectProduct,
+  selectProductImage,
+  selectScrapHouseWarm,
 };

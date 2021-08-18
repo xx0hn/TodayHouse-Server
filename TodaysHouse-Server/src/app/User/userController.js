@@ -11,6 +11,7 @@ const {emit} = require("nodemon");
 
 const axios = require('axios');
 const secret_config = require('../../../config/secret');
+const crypto = require("crypto");
 const jwt = require('jsonwebtoken');
 const { logger } = require('../../../config/winston');
 const baseResponseStatus = require('../../../config/baseResponseStatus');
@@ -103,10 +104,16 @@ exports.getMyPages = async function(req, res){
     }
     else{
         const getMyPages = await userProvider.getMyPages(userId);
+        const spaceTotal = await userProvider.spaceTotal(userId);
         const getPictures = await userProvider.getPictures(userId);
+        const pictures = [];
+        spaceTotal.push(getPictures);
+        pictures.push(spaceTotal);
         for(let i=0; i<8; i++){
+            const getPicturesSpace = await userProvider.getPicturesSpace(i+1);
             const getUserPictures = await userProvider.getUserPictures(userId, i+1);
-            getPictures.push(getUserPictures);
+            getPicturesSpace.push(getUserPictures);
+            pictures.push(getPicturesSpace);
         }
         const getScrapBook = await userProvider.getScrapBook(userId);
         const countScrapBook = await userProvider.countScrapBook(userId);
@@ -117,7 +124,7 @@ exports.getMyPages = async function(req, res){
         const getKnowHow = await userProvider.getKnowHow(userId);
         const countKnowHow = await userProvider.countKnowHow(userId);
         countKnowHow.push(getKnowHow)
-        result.push({MyPageInfo: getMyPages, Pictures: getPictures
+        result.push({MyPageInfo: getMyPages, Pictures: pictures
                 , AmountScrapBook: countScrapBook
                 , AmountHouseWarm: countHouseWarm
                 , AmountKnowHow: countKnowHow});
@@ -142,12 +149,18 @@ exports.getOtherProfiles = async function(req, res){
 
     const userPageInfo = await userProvider.userPageInfo(usersId);
     const countPictures = await userProvider.countPictures(usersId);
+    const spaceTotal = await userProvider.spaceTotal(userId);
     const getPictures = await userProvider.getPictures(usersId);
+    const pictures = [];
+    spaceTotal.push(getPictures);
+    pictures.push(spaceTotal);
     for(let i=0; i<8; i++){
+        const getPicturesSpace = await userProvider.getPicturesSpace(i+1);
         const getUserPictures = await userProvider.getUserPictures(usersId, i+1);
-        getPictures.push(getUserPictures);
+        getPicturesSpace.push(getUserPictures);
+        pictures.push(getPicturesSpace);
     }
-    countPictures.push(getPictures);
+    countPictures.push(pictures);
     const countHouseWarm = await userProvider.countHouseWarm(usersId);
     const getHouseWarm = await userProvider.getHouseWarm(usersId);
     countHouseWarm.push(getHouseWarm);
@@ -353,6 +366,61 @@ exports.patchScrap = async function(req, res){
 }
 
 /**
+ * API No. 11
+ * API Name : 스크랩 조회 API
+ * [GET] /app/users/:userId/scraps
+ */
+exports.getScrap = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {type} = req.query;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!type) return res.send(response(baseResponse.SCRAP_BOOK_TYPE_EMPTY));
+    if(type==='TOTAL'){
+        const getTotalScrap = await userProvider.getTotalScrap(userId);
+        return res.send(response(baseResponse.SUCCESS, getTotalScrap));
+    }
+    else if(type==='FOLDER'){
+        const getFolder = await userProvider.getFolder(userId);
+        const folders = [];
+        for(let i=0; i<getFolder.length; i++){
+            const getFolderImage = await userProvider.getFolderImage(userId, getFolder[i].id);
+            folders.push(getFolder[i],getFolderImage);
+        }
+        return res.send(response(baseResponse.SUCCESS, folders));
+    }
+    else if(type==='PRODUCT'){
+        const {categoryId} = req.body;
+        const products = [];
+        if(!categoryId){
+            const getProduct = await userProvider.getTotalProduct(userId);
+            for(let i=0; i<getProduct.length; i++){
+                const getProductImage = await userProvider.getProductImage(getProduct[i].id);
+                products.push(getProduct[i], getProductImage);
+            }
+            return res.send(response(baseResponse.SUCCESS, products));
+        }
+        else{
+            const getProduct = await userProvider.getProduct(userId, categoryId);
+            const products = [];
+            for(let i=0; i<getProduct.length; i++){
+                const getProductImage = await userProvider.getProductImage(getProduct[i].id);
+                products.push(getProduct[i], getProductImage);
+            }
+            return res.send(response(baseResponse.SUCCESS, products));
+        }
+    }
+    else if(type==='HOUSEWARM'){
+        const getHouseWarm = await userProvider.getScrapHouseWarm(userId);
+        return res.send(response(baseResponse.SUCCESS, getHouseWarm));
+    }
+    return res.send(response(baseResponse.SCRAP_BOOK_TYPE_ERROR));
+}
+
+
+/**
  * API No.
  * API Name : 유저 조회 API (+ 이메일로 검색 조회)
  * [GET] /app/users
@@ -402,3 +470,74 @@ exports.check = async function (req, res) {
     console.log(userIdResult);
     return res.send(response(baseResponse.TOKEN_VERIFICATION_SUCCESS));
 };
+
+
+/**
+ * API No. 36
+ * API Name : 이메일 중복 체크 API
+ * [GET] /app/emails
+ */
+exports.emailCheck = async function(req, res){
+    const {email} = req.query;
+    if(!email) return res.send(response(baseResponse.SIGNIN_EMAIL_EMPTY));
+    if (email.length > 30)
+        return res.send(response(baseResponse.SIGNUP_EMAIL_LENGTH));
+    // 형식 체크 (by 정규표현식)
+    if (!regexEmail.test(email))
+        return res.send(response(baseResponse.SIGNUP_EMAIL_ERROR_TYPE));
+    const checkEmail = await userProvider.emailCheck(email);
+    if(checkEmail.length>0){
+        return res.send(errResponse(baseResponse.SIGNUP_REDUNDANT_EMAIL));
+    }
+    return res.send(response(baseResponse.SUCCESS));
+}
+
+/**
+ * API No. 37
+ * API Name : 닉네임 중복 체크 API
+ * [GET] /app/nicknames
+ */
+exports.nicknameCheck = async function (req, res){
+    const {nickName} = req.query;
+    if(!nickName) return res.send(response(baseResponse.SIGNUP_NICKNAME_EMPTY));
+    if(nickName.length>10)
+        return res.send(response(baseResponse.SIGNUP_NICKNAME_LENGTH));
+    const nickNameRows = await userProvider.nickNameCheck(nickName);
+    if(nickNameRows.length>0){
+        return res.send(errResponse(baseResponse.SIGNUP_REDUNDANT_NICKNAME));
+    }
+    return res.send(response(baseResponse.SUCCESS));
+}
+
+/**
+ * API No. 38
+ * API Name : 비밀번호 확인 API
+ * [GET] /app/passwords
+ */
+exports.passwordCheck = async function(req, res){
+    const {passWord, passWordCheck} = req.query;
+    if (!passWord)
+        return res.send(response(baseResponse.SIGNUP_PASSWORD_EMPTY));
+    if(passWord.length<8)
+        return res.send(response(baseResponse.SIGNUP_PASSWORD_LENGTH));
+    else if (!regexPW.test(passWord)) {
+        return res.send(response(baseResponse.SIGNUP_PASSWORD_ERROR_TYPE_VAL));
+    }
+    if(!passWordCheck)
+        return res.send(response(baseResponse.SIGNUP_PASSWORD_CHECK_EMPTY));
+    // 비밀번호 암호화
+    const hashedPassword = await crypto
+        .createHash("sha512")
+        .update(passWord)
+        .digest("hex");
+    //확인 비밀번호 암호화
+    const hashedPasswordCheck = await crypto
+        .createHash("sha512")
+        .update(passWordCheck)
+        .digest("hex");
+    //비밀번호 확인
+    if(hashedPassword!=hashedPasswordCheck){
+        return res.send(errResponse(baseResponse.SIGNUP_PASSWORD_CHECK_NOT_MATCH));
+    }
+    return res.send(response(baseResponse.SUCCESS));
+}
