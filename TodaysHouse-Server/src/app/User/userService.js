@@ -304,7 +304,7 @@ exports.scrapProduct = async function (userId, id, folderId){
             const productCheck = await userProvider.reCheckProduct(userId, id);
             if(productCheck.length>0){
                 const connection = await pool.getConnection(async (conn) => conn);
-                const cancelProductScrap = await userDao.cancelProductScrap(userId, id);
+                const cancelProductScrap = await userDao.cancelProductScrap(connection, userId, id);
                 connection.release();
                 return response(baseResponse.SUCCESS);
             }
