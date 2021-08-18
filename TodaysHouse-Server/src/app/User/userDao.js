@@ -536,13 +536,24 @@ async function postProductScrap(connection, userId, id, folderId){
   return postProductScrapRows;
 }
 
-//스크랩 취소
-async function patchScrap(connection, userId, scrapId){
+
+//집들이 스크랩 취소
+async function cancelScrap(connection, userId, id){
   const patchScrapQuery=`
   update Scrap
   set status = 'DELETED'
-  where userId = ? and id = ?;`;
-  const [patchScrapRows] = await connection.query(patchScrapQuery, [userId, scrapId]);
+  where userId = ? and houseWarmId = ?;`;
+  const [patchScrapRows] = await connection.query(patchScrapQuery, [userId, id]);
+  return patchScrapRows;
+}
+
+//상품 스크랩 취소
+async function cancelProductScrap(connection, userId, id){
+  const patchScrapQuery=`
+  update Scrap
+  set status = 'DELETED'
+  where userId = ? and productId = ?;`;
+  const [patchScrapRows] = await connection.query(patchScrapQuery, [userId, id]);
   return patchScrapRows;
 }
 
@@ -937,7 +948,8 @@ module.exports = {
   selectProductCheck,
   editProductScrapStatus,
   postProductScrap,
-  patchScrap,
+  cancelScrap,
+  cancelProductScrap,
   selectTotalScrap,
   selectFolder,
   selectFolderImage,

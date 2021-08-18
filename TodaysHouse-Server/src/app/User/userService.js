@@ -272,7 +272,10 @@ exports.scrapHouseWarm = async function (userId, id, folderId){
         if(houseWarmRows.length>0){
             const houseWarmCheck = await userProvider.reCheckHouseWarm(userId, id);
             if(houseWarmCheck.length>0){
-                return errResponse(baseResponse.ALREADY_SCRAP);
+                const connection = await pool.getConnection(async(conn)=>conn);
+                const cancelScrap = await userDao.cancelScrap(connection, userId, id);
+                connection.release();
+                return response(baseResponse.SUCCESS);
             }
             else {
                 const connection = await pool.getConnection(async (conn) => conn);
@@ -300,7 +303,10 @@ exports.scrapProduct = async function (userId, id, folderId){
         if(productRows.length>0){
             const productCheck = await userProvider.reCheckProduct(userId, id);
             if(productCheck.length>0){
-                return errResponse(baseResponse.ALREADY_SCRAP);
+                const connection = await pool.getConnection(async (conn) => conn);
+                const cancelProductScrap = await userDao.cancelProductScrap(userId, id);
+                connection.release();
+                return response(baseResponse.SUCCESS);
             }
             else {
                 const connection = await pool.getConnection(async (conn) => conn);
@@ -321,18 +327,6 @@ exports.scrapProduct = async function (userId, id, folderId){
     }
 }
 
-//스크랩 취소
-exports.patchScrap = async function (userId, scrapId){
-    try{
-        const connection = await pool.getConnection(async(conn)=>conn);
-        const patchScrap = await userDao.patchScrap(connection, userId, scrapId);
-        connection.release();
-        return response(baseResponse.SUCCESS);
-    } catch(err){
-        logger.error(`App - cancelScrap Service error\n: ${err.message}`);
-        return errResponse(baseResponse.DB_ERROR);
-    }
-}
 
 //좋아요
 exports.postLike = async function (userId, houseWarmId){
@@ -341,7 +335,10 @@ exports.postLike = async function (userId, houseWarmId){
         if(likeRows.length>0){
             const checkLikeRows = await userProvider.likeReCheck(userId, houseWarmId);
             if(checkLikeRows.length>0){
-                return errResponse(baseResponse.ALREADY_LIKE);
+                const connection = await pool.getConnection(async (conn) => conn);
+                const cancelLike = await userDao.cancelLike(connection, userId, houseWarmId);
+                connection.release();
+                return response(baseResponse.SUCCESS);
             }
             else {
                 const connection = await pool.getConnection(async (conn) => conn);
@@ -362,18 +359,6 @@ exports.postLike = async function (userId, houseWarmId){
     }
 }
 
-//좋아요 취소
-exports.patchLike = async function (userId, houseWarmId){
-    try{
-        const connection = await pool.getConnection(async(conn)=>conn);
-        const cancelLike = await userDao.cancelLike(connection, userId, houseWarmId);
-        connection.release();
-        return response(baseResponse.SUCCESS);
-    } catch(err){
-        logger.error(`App - cancelLike Service error\n: ${err.message}`);
-        return errResponse(baseResponse.DB_ERROR);
-    }
-}
 
 //팔로우
 exports.postFollow = async function (userId, usersId){
@@ -382,7 +367,10 @@ exports.postFollow = async function (userId, usersId){
         if(followRows.length>0){
             const checkFollowRows = await userProvider.followReCheck(userId, usersId);
             if(checkFollowRows.length>0){
-                return response(baseResponse.ALREADY_FOLLOW);
+                const connection = await pool.getConnection(async (conn) => conn);
+                const cancelFollow = await userDao.cancelFollow(connection, userId, usersId);
+                connection.release();
+                return response(baseResponse.SUCCESS);
             }
             else{
                 const connection = await pool.getConnection(async(conn)=>conn);

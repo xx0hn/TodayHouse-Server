@@ -64,35 +64,32 @@ module.exports = function(app){
     // 9. 스크랩 API
     app.post('/app/users/:userId/scraps', jwtMiddleware, user.postScrap);
 
-    // 10. 스크랩 취소 API
-    app.patch('/app/users/:userId/scraps', jwtMiddleware, user.patchScrap);
-
-    // 11. 스크랩 조회 API
+    // 10. 스크랩 조회 API
     app.get('/app/users/:userId/scraps', jwtMiddleware, user.getScrap);
 
-    // 12. 좋아요 API
+    // 11. 좋아요 API
     app.post('/app/users/:userId/likes', jwtMiddleware, user.postLike);
 
     // 13. 좋아요 취소 API
     app.patch('/app/users/:userId/likes', jwtMiddleware, user.patchLike);
 
-    // 14. 좋아요 조회 API
+    // 12. 좋아요 조회 API
     app.get('/app/users/:userId/likes', jwtMiddleware, user.getLike);
 
-    // 15. 팔로우 API
+    // 13. 팔로우 API
     app.post('/app/users/:userId/follows', jwtMiddleware, user.postFollow);
 
     // 16. 팔로우 취소 API
     app.patch('/app/users/:userId/follows', jwtMiddleware, user.patchFollow);
 
 
-    // 36. 이메일 중복 체크 API
+    // 33. 이메일 중복 체크 API
     app.get('/app/emails', user.emailCheck);
 
-    // 37. 닉네임 중복 체크 API
+    // 34. 닉네임 중복 체크 API
     app.get('/app/nicknames', user.nicknameCheck);
 
-    // 38. 확인 비밀번호 체크 API
+    // 35. 확인 비밀번호 체크 API
     app.get('/app/passwords', user.passwordCheck);
 
     //  유저 조회 API (+ 검색)

@@ -348,25 +348,10 @@ exports.postScrap = async function(req, res){
     return res.send(response(baseResponse.SCRAP_TYPE_ERROR));
 }
 
-/**
- * API No. 10
- * API Name : 스크랩 취소 API
- * [PATCH] /app/users/:userId/scrap-folders
- */
-exports.patchScrap = async function(req, res){
-    const userIdFromJWT = req.verifiedToken.userId;
-    const userId = req.params.userId;
-    const {scrapId} = req.body;
-    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
-    if(userIdFromJWT!=userId)
-        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
-    if(!scrapId) return res.send(response(baseResponse.SCRAP_SCRAPID_EMPTY));
-    const patchScrap = await userService.patchScrap(userId, scrapId);
-    return res.send(response(patchScrap));
-}
+
 
 /**
- * API No. 11
+ * API No. 10
  * API Name : 스크랩 조회 API
  * [GET] /app/users/:userId/scraps
  */
@@ -421,7 +406,7 @@ exports.getScrap = async function(req, res){
 
 
 /**
- * API No. 12
+ * API No. 11
  * API Name : 좋아요 API
  * [POST] /app/users/:userId/likes
  */
@@ -457,7 +442,7 @@ exports.patchLike = async function(req, res){
 
 
 /**
- * API No. 14
+ * API No. 12
  * API Name : 좋아요 조회 API
  * [GET] /app/users/:userId/likes
  */
@@ -481,7 +466,7 @@ exports.getLike = async function(req, res){
 }
 
 /**
- * API No. 15
+ * API No. 13
  * API Name : 팔로우 API
  * [POST] /app/users/:userId/follows
  */
