@@ -22,7 +22,7 @@ module.exports = {
 
     SIGNIN_EMAIL_EMPTY : { "isSuccess": false, "code": 2008, "message":"이메일을 입력해주세요" },
     SIGNIN_EMAIL_LENGTH : { "isSuccess": false, "code": 2009, "message":"이메일은 30자리 미만으로 입력해주세요." },
-    SIGNIN_EMAIL_ERROR_TYPE : { "isSuccess": false, "code": 2010, "message":"이메일을 형식을 정확하게 입력해주세요." },
+    SIGNIN_EMAIL_ERROR_TYPE : { "isSuccess": false, "code": 2010, "message":"이메일 형식을 정확하게 입력해주세요." },
     SIGNIN_PASSWORD_EMPTY : { "isSuccess": false, "code": 2011, "message": "비밀번호를 입력해주세요." },
     SIGNIN_PASSWORD_LENGTH: { "isSuccess": false, "code": 2021, "message": "비밀번호는 8자리 이상 입력해주세요." },
 
@@ -68,6 +68,9 @@ module.exports = {
 
     COMMENT_ID_EMPTY:{ "isSuccess": false, "code": 2041, "message": "댓글id를 입력해주세요. " },
     COMMENT_CONTENT_EMPTY:{ "isSuccess": false, "code": 2042, "message": "댓글 내용을 입력해주세요. " },
+    COMMENT_REPLY_ID_EMPTY:{ "isSuccess": false, "code": 2043, "message": "대댓글id를 입력해주세요. " },
+
+    PRODUCT_CATEGORY_ID_EMPTY:{ "isSuccess": false, "code": 2044, "message": "상품 카테고리를 입력해주세요. " },
 
 
     // Response error
@@ -98,6 +101,7 @@ module.exports = {
     FOLLOW_TYPE_ERROR: { "isSuccess": false, "code": 3018, "message": "팔로우 타입을 정확하게 입력해주세요. (FOLLOWER, FOLLOWING) "},
 
     COMMENT_TYPE_ERROR: { "isSuccess": false, "code": 3019, "message": "댓글 타입을 정확하게 입력해주세요. (COMMENT, REPLY) "},
+    PRODUCT_CATEGORY_ID_ERROR:  { "isSuccess": false, "code": 3020, "message": "카테고리 id를 정확하게 입력해주세요. "},
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},
     SERVER_ERROR : { "isSuccess": false, "code": 4001, "message": "서버 에러"},

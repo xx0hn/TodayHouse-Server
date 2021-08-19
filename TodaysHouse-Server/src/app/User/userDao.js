@@ -962,6 +962,47 @@ async function postReply(connection, userId, id, contents){
   return replyRows;
 }
 
+//댓글의 대댓글 조회
+async function selectReply(connection, id){
+  const getReplyQuery=`
+  select id
+        , commentId
+  from CommentReply
+  where commentId = ?;`;
+  const [replyRows] = await connection.query(getReplyQuery, id);
+  return replyRows;
+}
+
+//댓글의 대댓글 수정(삭제)
+async function patchCommentReply(connection, id){
+  const patchCommentReplyQuery=`
+  update CommentReply
+  set status = 'DELETED'
+  where commentId = ?;`;
+  const [patchReplyRows] = await connection.query(patchCommentReplyQuery, id);
+  return patchReplyRows;
+}
+
+//댓글 수정(삭제)
+async function patchComment(connection, userId, id){
+  const patchCommentQuery=`
+  update Comment
+  set status = 'DELETED'
+  where userId= ? and id = ?;`;
+  const [commentRows] = await connection.query(patchCommentQuery, [userId, id]);
+  return commentRows;
+}
+
+//대댓글 수정(삭제)
+async function patchReply(connection, userId, id){
+  const patchReplyQuery=`
+  update CommentReply
+  set status = 'DELETED'
+  where userId = ? and id = ?;`;
+  const [replyRows] = await connection.query(patchReplyQuery, [userId, id]);
+  return replyRows;
+}
+
 
 module.exports = {
   selectUser,
@@ -1027,4 +1068,8 @@ module.exports = {
   selectFollowing,
   postComment,
   postReply,
+  patchComment,
+  patchReply,
+  selectReply,
+  patchCommentReply,
 };

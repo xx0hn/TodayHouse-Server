@@ -330,3 +330,11 @@ exports.getFollowing = async function(userId){
   connection.release();
   return getFollowing;
 }
+
+//대댓글 갯수 조회
+exports.checkReply = async function(id){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getReply = await userDao.selectReply(connection, id);
+  connection.release();
+  return getReply;
+}

@@ -416,3 +416,38 @@ exports.postReply = async function (userId, id, contents){
         return errResponse(baseResponse.DB_ERROR);
     }
 }
+
+//댓글 수정(삭제)
+exports.patchComment = async function (userId, id){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    try{
+        await connection.beginTransaction();
+        const replyRows = await userProvider.checkReply(id);
+        if(replyRows.length>0){
+            const patchCommentReply = await userDao.patchCommentReply(connection, id);
+        }
+        const patchComment = await userDao.patchComment(connection, userId, id);
+        await connection.commit();
+        return response(baseResponse.SUCCESS);
+    }catch(err){
+        logger.error(`App - patchComment Transaction Service error\n: ${err.message}`);
+        await connection.rollback();
+        return errResponse(baseResponse.DB_ERROR);
+    }
+    finally {
+        connection.release();
+    }
+}
+
+//대댓글 수정(삭제)}
+exports.patchReply = async function (userId, id){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const patchReply = await userDao.patchReply(connection, userId, id);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    }catch(err){
+        logger.error(`App - patchCommentReply Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}

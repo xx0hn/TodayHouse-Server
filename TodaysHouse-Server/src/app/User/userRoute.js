@@ -83,14 +83,17 @@ module.exports = function(app){
     // 15. 댓글 달기 API
     app.post('/app/users/:userId/comments', jwtMiddleware, user.postComment);
 
+    // 16. 댓글 수정 API
+    app.patch('/app/users/:userId/comments', jwtMiddleware, user.patchComment);
 
-    // 33. 이메일 중복 체크 API
+
+    // 32. 이메일 중복 체크 API
     app.get('/app/emails', user.emailCheck);
 
-    // 34. 닉네임 중복 체크 API
+    // 33. 닉네임 중복 체크 API
     app.get('/app/nicknames', user.nicknameCheck);
 
-    // 35. 확인 비밀번호 체크 API
+    // 34. 확인 비밀번호 체크 API
     app.get('/app/passwords', user.passwordCheck);
 
     //  유저 조회 API (+ 검색)

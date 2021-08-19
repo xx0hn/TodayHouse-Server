@@ -516,6 +516,32 @@ exports.postComment = async function(req, res){
 }
 
 /**
+ * API No. 16
+ * API Name : 댓글 수정 API
+ * [PATCH] /app/users/:userId/comments
+ */
+exports.patchComment = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {type, id} = req.query;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!type) return res.send(response(baseResponse.COMMENT_TYPE_EMPTY));
+    if(type==='COMMENT'){
+        if(!id) return res.send(response(baseResponse.COMMENT_ID_EMPTY));
+        const patchComment = await userService.patchComment(userId, id);
+        return res.send(response(patchComment));
+    }
+    else if(type==='REPLY'){
+        if(!id) return res.send(response(baseResponse.COMMENT_REPLY_ID_EMPTY));
+        const patchReply = await userService.patchReply(userId, id);
+        return res.send(response(patchReply));
+    }
+    return res.send(errResponse(baseResponse.COMMENT_TYPE_ERROR));
+}
+
+/**
  * API No.
  * API Name : 유저 조회 API (+ 이메일로 검색 조회)
  * [GET] /app/users
