@@ -50,3 +50,98 @@ exports.getCategoryBest = async function(categoryId){
     connection.release();
     return getCategoryBest;
 }
+
+//집들이 하나 조회
+exports.getHouseWarm = async function(houseWarmId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getHouseWarm = await postDao.selectHouseWarm(connection, houseWarmId);
+    connection.release();
+    return getHouseWarm;
+}
+
+//집들이 소제목 조회
+exports.getContentsTitle = async function(houseWarmId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getContentsTitle = await postDao.selectContentsTitle(connection, houseWarmId);
+    connection.release();
+    return getContentsTitle;
+}
+
+//작성자 프로필 사진, 닉네임 조회
+exports.getUserImageNickname = async function(houseWarmId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getUser = await postDao.selectUser(connection, houseWarmId);
+    connection.release();
+    return getUser;
+}
+
+//포함된 전체 상품 조회
+exports.getIncludeTotalProduct = async function(houseWarmId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getTotalProduct = await postDao.selectTotalProduct(connection, houseWarmId);
+    connection.release();
+    return getTotalProduct;
+}
+
+//좋아요, 스크랩, 댓글, 조회수 출력
+exports.getTotalCount = async function(houseWarmId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getTotalCount = await postDao.selectTotalCount(connection, houseWarmId);
+    connection.release();
+    return getTotalCount;
+}
+
+//댓글 조회
+exports.getComment = async function(houseWarmId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getComment = await postDao.selectComment(connection, houseWarmId);
+    connection.release();
+    return getComment;
+}
+
+//집들이 스타일id 조회
+exports.getHouseWarmStyleId = async function(houseWarmId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getStyleId = await postDao.selectStyle(connection, houseWarmId);
+    connection.release();
+    return getStyleId;
+}
+
+//비슷한 집들이 조회
+exports.getSimilarHouseWarm = async function(styleId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getSimilarHouseWarm = await postDao.selectSimilarHouseWarm(connection, styleId);
+    connection.release();
+    return getSimilarHouseWarm;
+}
+
+//집들이 내용 조회
+exports.getHouseWarmContents = async function(houseWarmId, title){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getHouseWarmContents = await postDao.selectHouseWarmContents(connection, houseWarmId, title);
+    connection.release();
+    return getHouseWarmContents;
+}
+
+exports.houseWarmContent = async function(houseWarmId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getHouseWarmContent = await postDao.houseWarmContent(connection, houseWarmId);
+    connection.release();
+    return getHouseWarmContent;
+}
+
+//집들이 사진에 들어가는 상품 조회
+exports.getHouseWarmContentsProduct = async function(houseWarmContentsId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getHouseWarmContentsProduct = await postDao.selectHouseWarmContentsProduct(connection, houseWarmContentsId);
+    connection.release();
+    return getHouseWarmContentsProduct;
+}
+
+//대댓글 조회
+exports.getReply = async function(commentId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getReply = await postDao.selectReply(connection, commentId);
+    connection.release();
+    return getReply;
+}

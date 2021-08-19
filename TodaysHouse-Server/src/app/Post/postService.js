@@ -12,3 +12,16 @@ const regexEmail = require("regex-email");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const {connect} = require("http2");
+
+//조회수 증가
+exports.patchViewCount = async function (houseWarmId){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const patchViewCount = await postDao.patchViewCount(connection, houseWarmId);
+        connection.release();
+        return response(baseResponse.INCREASED_VIEW_COUNT);
+    }catch(err){
+        logger.error(`App - increaseViewCount Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}

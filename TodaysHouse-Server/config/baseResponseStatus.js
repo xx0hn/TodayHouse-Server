@@ -2,6 +2,7 @@ module.exports = {
 
     // Success
     SUCCESS : { "isSuccess": true, "code": 1000, "message":"성공" },
+    INCREASED_VIEW_COUNT:  { "isSuccess": true, "code": 1001, "message": "조회수가 증가했습니다. "},
 
     // Common
     TOKEN_EMPTY : { "isSuccess": false, "code": 2000, "message":"JWT 토큰을 입력해주세요." },
@@ -102,6 +103,7 @@ module.exports = {
 
     COMMENT_TYPE_ERROR: { "isSuccess": false, "code": 3019, "message": "댓글 타입을 정확하게 입력해주세요. (COMMENT, REPLY) "},
     PRODUCT_CATEGORY_ID_ERROR:  { "isSuccess": false, "code": 3020, "message": "카테고리 id를 정확하게 입력해주세요. "},
+
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},
     SERVER_ERROR : { "isSuccess": false, "code": 4001, "message": "서버 에러"},
