@@ -451,3 +451,16 @@ exports.patchReply = async function (userId, id){
         return errResponse(baseResponse.DB_ERROR);
     }
 }
+
+//문의 생성
+exports.postInquiry = async function(userId, productId, categoryId, contents){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const postInquiry = await userDao.postInquiry(connection, userId, productId, categoryId, contents);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - postInquiry Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}

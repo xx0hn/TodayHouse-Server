@@ -16,7 +16,12 @@ const jwt = require('jsonwebtoken');
 const { logger } = require('../../../config/winston');
 const baseResponseStatus = require('../../../config/baseResponseStatus');
 
-// 인기탭 조회
+
+/**
+ * API No. 17
+ * API Name : 인기탭 조회 API
+ * [GET] /app/posts/polular
+ */
 exports.getPopular = async function(req, res){
     const {categoryId} = req.query;
     const getTodayStory = await postProvider.getTodayStory();
@@ -42,7 +47,12 @@ exports.getPopular = async function(req, res){
 
 // 집들이 전체 조회
 
-// 집들이 하나 조회
+
+/**
+ * API No. 19
+ * API Name : 집들이 게시글 조회 API
+ * [GET] /app/housewarms/:houseWarmId
+ */
 exports.getHouseWarm = async function (req, res){
     const houseWarmId = req.params.houseWarmId;
     if(!houseWarmId) return res.send(response(baseResponse.HOUSE_WARM_ID_EMPTY));

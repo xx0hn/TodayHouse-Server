@@ -94,6 +94,7 @@ async function selectUserMyPages(connection, userId){
         , case when couponCount is null then 0 else couponCount end as Coupon
         , case when countScrap is null then 0 else countScrap end as ScrapBook
         , case when countLike is null then 0 else countLike end as Likes
+        , a.point as Point 
 from User a
 left join ( select id
                     , fromUserId
@@ -1003,6 +1004,172 @@ async function patchReply(connection, userId, id){
   return replyRows;
 }
 
+//전체 카테고리 조회(7ea)
+async function selectStoreCategory(connection){
+  const selectStoreCategoryQuery=`
+  select name
+  from LargeCategory
+  order by id asc limit 7;`;
+  const [categoryRows] = await connection.query(selectStoreCategoryQuery);
+  return categoryRows;
+}
+
+//최근에 본 상품 조회
+async function selectRecentProduct(connection, userId){
+  const selectRecentProdcutQuery=`
+  select a.largeCategoryId as CategoryId
+        , c.imageUrl as Image
+        , e.name as BrandName
+        , a.name as ProductName
+        , concat(a.discount, '%') as Discount
+        , concat(format(a.saleCost,0),'원') as SaleCost
+        , case when starGrade is null then 0 else starGrade end as StarGrade
+        , case when reviewCount is null then 0 else reviewCount end as ReviewCount
+        , case when f.delCost = 0 then '무료배송' end as DelCostType
+        , case when a.discount is not null then '특가' end as SpecialPrice
+from Product a
+left join ( select id
+                    , userId
+                    , productId
+                    , createdAt
+                from RecentProduct ) as b
+                on a.id = b.productId
+left join ( select id
+                    , productId
+                    , imageUrl
+                from ProductImageUrl ) as c
+                on a.id = c.productId
+left join ( select id
+                    , productId
+                    , starPoint
+                    , round(sum(starPoint) / count(productId), 1) as 'starGrade'
+                    , count(productId) as 'reviewCount'
+                from ProductReview 
+                group by productId) as d
+                on a.id = c.productId
+left join ( select id
+                    , name
+                from Brand) as e
+                on a.brandId = e.id
+left join  ( select id
+                    , delCost
+                from DeliveryInfo ) as f
+                on a.delInfoId = f.id
+where b.userId = ? and a.status = 'ACTIVE' and  timestampdiff(day, current_timestamp(), b.createdAt) < 7
+group by a.id
+order by b.createdAt desc;`;
+  const [recentRows] = await connection.query(selectRecentProdcutQuery, userId);
+  return recentRows;
+}
+
+//최근에 본 상품과 비슷한 상품
+async function selectRecentSimilarProduct (connection, largeCategoryId){
+  const selectRecentSimilarProductQuery=`
+    select a.largeCategoryId as CategoryId
+        , c.imageUrl as Image
+        , e.name as BrandName
+        , a.name as ProductName
+        , concat(a.discount, '%') as Discount
+        , concat(format(a.saleCost,0),'원') as SaleCost
+        , case when starGrade is null then 0 else starGrade end as StarGrade
+        , case when reviewCount is null then 0 else reviewCount end as ReviewCount
+        , case when f.delCost = 0 then '무료배송' end as DelCostType
+        , case when a.discount is not null then '특가' end as SpecialPrice
+from Product a
+left join ( select id
+                    , productId
+                    , imageUrl
+                from ProductImageUrl ) as c
+                on a.id = c.productId
+left join ( select id
+                    , productId
+                    , starPoint
+                    , round(sum(starPoint) / count(productId), 1) as 'starGrade'
+                    , count(productId) as 'reviewCount'
+                from ProductReview 
+                group by productId) as d
+                on a.id = c.productId
+left join ( select id
+                    , name
+                from Brand) as e
+                on a.brandId = e.id
+left join  ( select id
+                    , delCost
+                from DeliveryInfo ) as f
+                on a.delInfoId = f.id
+where a.largeCategoryId = ? and a.status = 'ACTIVE' 
+group by a.id ;`;
+  const [similarRows] = await connection.query(selectRecentSimilarProductQuery, largeCategoryId);
+  return similarRows;
+}
+
+//인기 키워드 조회
+async function selectPopularKeyword(connection){
+  const selectPopularKeywordQuery=`
+  select name as KeywordName
+        , imageUrl as Image
+from Keyword
+order by count desc limit 4;`;
+  const [keywordRows] = await connection.query(selectPopularKeywordQuery);
+  return keywordRows;
+}
+
+//인기 상품 조회
+async function selectPopularProduct(connection){
+  const selectPopularProductQuery=`
+  select c.imageUrl as Image
+        , e.name as BrandName
+        , a.name as ProductName
+        , concat(a.discount, '%') as Discount
+        , concat(format(a.saleCost,0),'원') as SaleCost
+        , case when starGrade is null then 0 else starGrade end as StarGrade
+        , case when reviewCount is null then 0 else reviewCount end as ReviewCount
+        , case when f.delCost = 0 then '무료배송' end as DelCostType
+        , case when a.discount is not null then '특가' end as SpecialPrice
+from Product a
+left join ( select id
+                    , productId
+                    , count(productId) as countOrders
+                from Orders
+                group by productId) as b
+                on a.id = b.productId
+left join ( select id
+                    , productId
+                    , imageUrl
+                from ProductImageUrl ) as c
+                on a.id = c.productId
+left join ( select id
+                    , productId
+                    , starPoint
+                    , round(sum(starPoint) / count(productId), 1) as 'starGrade'
+                    , count(productId) as 'reviewCount'
+                from ProductReview 
+                group by productId) as d
+                on a.id = c.productId
+left join ( select id
+                    , name
+                from Brand) as e
+                on a.brandId = e.id
+left join  ( select id
+                    , delCost
+                from DeliveryInfo ) as f
+                on a.delInfoId = f.id
+where a.status = 'ACTIVE' 
+group by a.id 
+order by countOrders desc;`;
+  const [popularRows] = await connection.query(selectPopularProductQuery);
+  return popularRows;
+}
+
+//문의 생성
+async function postInquiry(connection, userId, productId, categoryId, contents){
+  const postInquiryQuery=`
+  insert into Inquiry(userId, productId, categoryId, contents)
+  values(?,?,?,?);`;
+  const [postInquiryRows] = await connection.query(postInquiryQuery, [userId, productId, categoryId, contents]);
+  return postInquiryRows;
+}
+
 
 module.exports = {
   selectUser,
@@ -1072,4 +1239,10 @@ module.exports = {
   patchReply,
   selectReply,
   patchCommentReply,
+  selectStoreCategory,
+  selectRecentProduct,
+  selectRecentSimilarProduct,
+  selectPopularProduct,
+  selectPopularKeyword,
+  postInquiry,
 };

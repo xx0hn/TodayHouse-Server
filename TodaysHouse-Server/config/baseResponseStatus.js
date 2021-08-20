@@ -73,6 +73,12 @@ module.exports = {
 
     PRODUCT_CATEGORY_ID_EMPTY:{ "isSuccess": false, "code": 2044, "message": "상품 카테고리를 입력해주세요. " },
 
+    PRODUCT_ID_EMPTY:{ "isSuccess": false, "code": 2045, "message": "상품 id를 입력해주세요. " },
+
+    INQUIRY_CATEGORY_ID_EMPTY:{ "isSuccess": false, "code": 2046, "message": "문의 카테고리를 입력해주세요. " },
+    INQUIRY_CONTENTS_EMTPY:{ "isSuccess": false, "code": 2047, "message": "문의 내용을 입력해주세요. " },
+
+    SORT_TYPE_EMPTY:{ "isSuccess": false, "code": 2048, "message": "정렬 우선순위를 입력해주세요. " },
 
     // Response error
     SIGNUP_REDUNDANT_EMAIL : { "isSuccess": false, "code": 3001, "message":"중복된 이메일입니다." },
@@ -103,6 +109,8 @@ module.exports = {
 
     COMMENT_TYPE_ERROR: { "isSuccess": false, "code": 3019, "message": "댓글 타입을 정확하게 입력해주세요. (COMMENT, REPLY) "},
     PRODUCT_CATEGORY_ID_ERROR:  { "isSuccess": false, "code": 3020, "message": "카테고리 id를 정확하게 입력해주세요. "},
+
+    SORT_TYPE_ERROR:  { "isSuccess": false, "code": 3021, "message": "정렬 우선순위를 정확하게 입력해주세요. (ORDER, POPULAR, LOWPRICE, HIGHPRICE, REVIEW, USERPHOTO, NEW"},
 
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},

@@ -338,3 +338,43 @@ exports.checkReply = async function(id){
   connection.release();
   return getReply;
 }
+
+//상품 카테고리 전체 나열
+exports.getStoreCategory = async function(){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getStoreCategory = await userDao.selectStoreCategory(connection);
+  connection.release();
+  return getStoreCategory;
+}
+
+//최근에 본 상품 조회
+exports.getRecentProduct = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getRecentProduct = await userDao.selectRecentProduct(connection, userId);
+  connection.release();
+  return getRecentProduct;
+}
+
+//최근에 본 상품과 비슷한 상품 조회
+exports.getRecentSimilarProduct = async function(largeCategoryId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getRecentSimilarProduct = await userDao.selectRecentSimilarProduct(connection, largeCategoryId);
+  connection.release();
+  return getRecentSimilarProduct;
+}
+
+//인기 키워드 조회
+exports.getPopularKeyword = async function(){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getPopularKeyword = await userDao.selectPopularKeyword(connection);
+  connection.release();
+  return getPopularKeyword;
+}
+
+//인기 상품 조회
+exports.getPopularProduct = async function(){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getPopularProduct = await userDao.selectPopularProduct(connection);
+  connection.release();
+  return getPopularProduct;
+}

@@ -542,6 +542,51 @@ exports.patchComment = async function(req, res){
 }
 
 /**
+ * API No. 25
+ * API Name : 문의 생성 API
+ * [POST] /app/users/:userId/Inquiry
+ */
+exports.postInquiry = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {productId} = req.query;
+    const {categoryId, contents} = req.body;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!productId) return res.send(response(baseResponse.PRODUCT_ID_EMPTY));
+    if(!categoryId) return res.send(response(baseResponse.INQUIRY_CATEGORY_ID_EMPTY));
+    if(!contents) return res.send(response(baseResponse.INQUIRY_CONTENTS_EMTPY));
+    const postInquiry = await userService.postInquiry(userId, productId, categoryId, contents);
+    return res.send(response(postInquiry));
+}
+
+
+
+/**
+ * API No. 21
+ * API Name : 스토어 홈 조회 API
+ * [GET] /app/users/:userId/store-home
+ */
+exports.getStoreHome = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    const getStoreCategory = await userProvider.getStoreCategory();
+    const getRecentProduct = await userProvider.getRecentProduct(userId);
+    const getRecentSimilarProduct = await userProvider.getRecentSimilarProduct(getRecentProduct[0].CategoryId);
+    const getPopularKeyword = await userProvider.getPopularKeyword();
+    const getPopularProduct = await userProvider.getPopularProduct();
+    const result = [];
+    result.push({ProductCategories: getStoreCategory, RecentViewedProduct: getRecentProduct
+                , RecentViewedSimilarProduct: getRecentSimilarProduct, PopularKeyword: getPopularKeyword
+                , PopularProduct: getPopularProduct});
+    return res.send(response(baseResponse.SUCCESS, result));
+}
+
+/**
  * API No.
  * API Name : 유저 조회 API (+ 이메일로 검색 조회)
  * [GET] /app/users
@@ -586,7 +631,7 @@ exports.getUserById = async function (req, res) {
 /** JWT 토큰 검증 API
  * [GET] /app/auto-login
  */
-exports.check = async function (req, res) {
+exports.jwtCheck = async function (req, res) {
     const userIdResult = req.verifiedToken.userId;
     console.log(userIdResult);
     return res.send(response(baseResponse.TOKEN_VERIFICATION_SUCCESS));

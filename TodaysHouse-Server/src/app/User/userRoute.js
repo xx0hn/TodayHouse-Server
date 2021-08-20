@@ -86,6 +86,15 @@ module.exports = function(app){
     // 16. 댓글 수정 API
     app.patch('/app/users/:userId/comments', jwtMiddleware, user.patchComment);
 
+    // 21. 스토어 홈 조회 API
+    app.get('/app/users/:userId/store-home', jwtMiddleware, user.getStoreHome);
+
+    // 25. 문의 생성 API
+    app.post('/app/users/:userId/inquiry', jwtMiddleware, user.postInquiry);
+
+
+    // 31. 자동 로그인 API
+    app.get('/app/auto-login', jwtMiddleware, user.jwtCheck);
 
     // 32. 이메일 중복 체크 API
     app.get('/app/emails', user.emailCheck);
@@ -111,6 +120,5 @@ module.exports = function(app){
 
 // TODO: 자동로그인 API (JWT 검증 및 Payload 내뱉기)
 // JWT 검증 API
-// app.get('/app/auto-login', jwtMiddleware, user.check);
 
 // TODO: 탈퇴하기 API
