@@ -1,7 +1,8 @@
 //오늘의 스토리 조회
 async function selectTodayStory(connection){
     const selectTodayStoryQuery=`
-    select title as HouseWarmTitle
+    select id as HouseWarmId
+        , title as HouseWarmTitle
         , imageUrl as MainImage
 from HouseWarm 
 order by viewCount desc limit 10;`;
