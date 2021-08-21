@@ -48,7 +48,8 @@ async function selectPrintTotal(connection){
 //전체 베스트 상품 조회
 async function selectBestProduct(connection){
     const selectBestProductQuery=`
-    select row_number() over(order by orderCount desc) as Ranking
+    select a.id as ProductId
+        , row_number() over(order by orderCount desc) as Ranking
         , b.imageUrl as ProductImage
         , a.name as ProductName
         , case when discount is not null then concat(discount, '%') end as DiscountPercent
@@ -85,7 +86,8 @@ order by orderCount desc limit 3;`;
 //카테고리 별 베스트 상품 조회
 async function selectCategoryBest(connection, categoryId){
     const selectCategoryBestQuery=`
-    select row_number() over(order by orderCount desc) as Ranking
+    select a.id as ProductId
+        , row_number() over(order by orderCount desc) as Ranking
         , b.imageUrl as ProductImage
         , a.name as ProductName
         , case when discount is not null then concat(discount, '%') end as DiscountPercent
@@ -132,7 +134,8 @@ async function patchViewCount(connection, houseWarmId){
 //집들이 상단 정보
 async function selectHouseWarm(connection, houseWarmId){
     const selectHouseWarmQuery=`
-    select imageUrl as Image
+    select a.id as HouseWarmId
+        , imageUrl as Image
         , case when a.id is not null then '온라인 집들이' end as Type
         , b.profileImageUrl as UserProfileImage
         , b.nickName as UserNickName

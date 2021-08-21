@@ -33,7 +33,8 @@ async function selectDetailCategory(connection, categoryId){
 //큰 카테고리 판매량순 조회
 async function orderLCategoryProduct(connection, categoryId){
     const orderLCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -80,7 +81,8 @@ order by countOrders desc;`;
 //중간 카테고리 판매량순 조회
 async function orderMCategoryProduct(connection, categoryId){
     const orderMCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -127,7 +129,8 @@ order by countOrders desc;`;
 //작은 카테고리 판매량순 조회
 async function orderSCategoryProduct(connection, categoryId){
     const orderSCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -174,7 +177,8 @@ order by countOrders desc;`;
 //큰 카테고리 인기순 조회
 async function popularLCategoryProduct(connection, categoryId){
     const popularLCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -221,7 +225,8 @@ order by a.viewCount desc;`;
 //중간 카테고리 인기순 조회
 async function popularMCategoryProduct(connection, categoryId){
     const popularMCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -268,7 +273,8 @@ order by a.viewCount desc;`;
 //작은 카테고리 인기순 조회
 async function popularSCategoryProduct(connection, categoryId){
     const popularSCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -315,7 +321,8 @@ order by a.viewCount desc;`;
 //큰 카테고리 낮은 가격순 조회
 async function lowLCategoryProduct (connection, categoryId){
     const lowLCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -362,7 +369,8 @@ order by a.saleCost asc;`;
 //중간 카테고리 낮은 가격순 조회
 async function lowMCategoryProduct (connection, categoryId){
     const lowMCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -409,7 +417,8 @@ order by a.saleCost asc;`;
 //작은 카테고리 낮은 가격순 조회
 async function lowSCategoryProduct (connection, categoryId){
     const lowSCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -456,7 +465,8 @@ order by a.saleCost asc;`;
 //큰 카테고리 높은 가격순 조회
 async function highLCategoryProduct (connection, categoryId){
     const highLCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -503,7 +513,8 @@ order by a.saleCost desc;`;
 //중간 카테고리 높은 가격순 조회
 async function highMCategoryProduct (connection, categoryId){
     const highMCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -550,7 +561,8 @@ order by a.saleCost desc;`;
 //작은 카테고리 높은 가격순 조회
 async function highSCategoryProduct (connection, categoryId){
     const highSCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -597,7 +609,8 @@ order by a.saleCost desc;`;
 //큰 카테고리 리뷰 많은순 조회
 async function reviewLCategoryProduct (connection, categoryId){
     const reviewLCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -644,7 +657,8 @@ order by reviewCount desc;`;
 //중간 카테고리 리뷰 많은순 조회
 async function reviewMCategoryProduct (connection, categoryId){
     const reviewMCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -691,7 +705,8 @@ order by reviewCount desc;`;
 //작은 카테고리 리뷰 많은순 조회
 async function reviewSCategoryProduct (connection, categoryId){
     const reviewSCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -738,7 +753,8 @@ order by reviewCount desc;`;
 //큰 카테고리 유저사진 많은순 조회
 async function photoLCategoryProduct (connection, categoryId){
     const photoLCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -792,7 +808,8 @@ order by photoCount desc;`;
 //중간 카테고리 유저사진 많은순 조회
 async function photoMCategoryProduct (connection, categoryId){
     const photoMCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -846,7 +863,8 @@ order by photoCount desc;`;
 //작은 카테고리 유저사진 많은순 조회
 async function photoSCategoryProduct (connection, categoryId){
     const photoSCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -900,7 +918,8 @@ order by photoCount desc;`;
 //큰 카테고리 최신순 조회
 async function newLCategoryProduct (connection, categoryId){
     const newLCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -947,7 +966,8 @@ order by a.createdAt desc;`;
 //중간 카테고리 최신순 조회
 async function newMCategoryProduct (connection, categoryId){
     const newMCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -994,7 +1014,8 @@ order by a.createdAt desc;`;
 //작은 카테고리 최신순 조회
 async function newSCategoryProduct (connection, categoryId){
     const newSCategoryProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -1053,7 +1074,8 @@ async function countInquiry (connection, productId){
 //문의 조회
 async function selectInquiry (connection, productId){
     const selectInquiryQuery=`
-    select case when countAnswer is not null then '답변완료' else '답변미완료'  end as Answer
+    select a.id as InquiryId
+        , case when countAnswer is not null then '답변완료' else '답변미완료'  end as Answer
         , concat(f.name, '관련') as Category
         , replace(c.nickName,right(c.nickName,length(c.nickName)/3*2),'**') as UserNickName
         , date_format(a.createdAt, '%Y-%m-%d') as QuestionCreatedAt
@@ -1145,7 +1167,8 @@ where b.id = ?;`;
 //판매자 정보 조회
 async function selectBrandInfo(connection, productId){
     const selectBrandInfoQuery=`
-    select a.companyName as CompanyName
+    select a.id as BrandId
+        , a.companyName as CompanyName
         , a.ownerName as CEOName
         , a.location as Location
         , a.phoneNum as CenterPhoneNumber
@@ -1196,7 +1219,8 @@ where productId = ?;`;
 //상품 정보 조회
 async function selectProductInfo(connection, productId){
     const selectProductInfoQuery=`
-    select d.name as BrandName
+    select a.id as ProductId
+        , d.name as BrandName
         , a.name as ProductName
         , case when starGrade is null then 0 else starGrade end as StarGrade
         , case when reviewCount is null then 0 else reviewCount end as ReviewCount
@@ -1233,7 +1257,8 @@ where a.id = ?;`;
 //스타일링샷 조회
 async function selectStylingShot(connection, productId){
     const selectStylingShotQuery=`
-    select c.imageUrl as Image
+    select c.id as HouseWarmContentsId
+        , c.imageUrl as Image
         , e.nickName as UserNickName
         , e.profileImageUrl as ProfileImage
 from Product a
@@ -1306,7 +1331,7 @@ where a.id = ? and b.status = 'ACTIVE';`;
 //상품 리뷰 사진만 조회
 async function selectReviewPhoto(connection, productId){
     const selectReviewPhotoQuery=`
-    select imageUrl
+    select id, imageUrl
     from ProductReview
     where productId = ? and status = 'ACTIVE'
     order by createdAt desc;`;
@@ -1317,7 +1342,8 @@ async function selectReviewPhoto(connection, productId){
 //상품 리뷰 조회
 async function selectProductReview(connection, productId){
     const selectProductReviewQuery=`
-        select c.nickName as UserNickName
+        select b.id as ReviewId
+            , c.nickName as UserNickName
              , c.profileImageUrl as ProfileImage
              , b.starPoint as StarPoint
              , date_format(b.createdAt, "%Y-%m-%d") as CreatedAt
@@ -1358,7 +1384,8 @@ async function selectProductInquiryCount(connection, productId){
 //비슷한 상품 조회
 async function selectSimilarProduct(connection, largeCategoryId){
     const selectSimilarProductQuery=`
-    select c.imageUrl as Image
+    select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
