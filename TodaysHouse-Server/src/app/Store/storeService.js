@@ -26,3 +26,16 @@ exports.addProductViewCount = async function (productId){
         return errResponse(baseResponse.DB_ERROR);
     }
 }
+
+// 최근 본 상품 추가
+exports.addRecentProduct = async function (userId, productId){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const addRecentProduct = await storeDao.addRecentProduct(connection, userId, productId);
+        connection.release();
+        return response(baseResponse.ADD_RECENT_VIEW);
+    } catch(err){
+        logger.error(`App - addRecentProduct Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}

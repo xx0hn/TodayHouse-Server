@@ -162,7 +162,12 @@ exports.getCategoryProduct = async function(req, res){
  * [GET] /app/products/:productId
  */
 exports.getProduct = async function(req, res){
-    const productId = req.params.productId;
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {productId} = req.query;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
     if(!productId) return res.send(response(baseResponse.PRODUCT_ID_EMPTY));
     const getProductImage = await storeProvider.getProductImage(productId);
     const getProductInfo = await storeProvider.getProductInfo(productId);
@@ -174,6 +179,7 @@ exports.getProduct = async function(req, res){
     const getProductInquiryCount = await storeProvider.getProductInquiryCount(productId);
     const getSimilarProduct = await storeProvider.getSimilarProduct(getProductInfo[0].largeCategoryId);
     const addProductViewCount = await storeService.addProductViewCount(productId);
+    const addRecentProduct = await storeService.addRecentProduct(userId, productId);
     const result=[];
     result.push({ProductImage: getProductImage, ProductInfo: getProductInfo, ProductStylingShot: getStylingShot,
                 ProductIntro: getProductIntro,TotalReview: getReviewTotal, ReviewPhoto:getReviewPhoto, ProductReview: getProductReview, ProductInquiryCount: getProductInquiryCount,

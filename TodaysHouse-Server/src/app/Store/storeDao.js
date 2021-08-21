@@ -1418,6 +1418,15 @@ async function addViewCount(connection, productId){
     return viewCountRows;
 }
 
+//최근 본 상품 추가
+async function addRecentProduct(connection, userId, productId){
+    const addRecentProductQuery=`
+    insert into RecentProduct(userId, productId)
+    values(?, ?);`;
+    const [recentRows] = await connection.query(addRecentProductQuery, [userId, productId]);
+    return recentRows;
+}
+
 module.exports = {
     selectMiddleCategory,
     selectSmallCategory,
@@ -1460,5 +1469,6 @@ module.exports = {
     selectProductInquiryCount,
     selectSimilarProduct,
     addViewCount,
-    selectReviewPhoto
+    selectReviewPhoto,
+    addRecentProduct,
 }

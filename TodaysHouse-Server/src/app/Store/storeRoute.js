@@ -10,7 +10,7 @@ module.exports = function(app) {
     app.get('/app/products/categories', store.getCategoryProduct);
 
     // 23. 스토어 특정 상품 조회 API
-    app.get('/app/products/:productId', store.getProduct);
+    app.get('/app/products/users/:userId',jwtMiddleware, store.getProduct);
 
     // 26. 문의 조회 API
     app.get('/app/products/:productId/inquiry', store.getInquiry);
