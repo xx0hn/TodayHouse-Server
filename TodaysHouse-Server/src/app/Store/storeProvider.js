@@ -231,3 +231,93 @@ exports.getBrandInfo = async function(productId){
     connection.release();
     return getBrandInfo;
 }
+
+//이메일 뒷자리 조회
+exports.getBackEmail = async function(){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getBackEmail = await storeDao.selectBackEmail(connection);
+    connection.release();
+    return getBackEmail;
+}
+
+//배송 요청사항 조회
+exports.getRequests = async function(){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getRequests = await storeDao.selectRequests(connection);
+    connection.release();
+    return getRequests;
+}
+
+//상품 이미지 조회
+exports.getProductImage = async function(productId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getProductImage = await storeDao.selectProductImage(connection, productId);
+    connection.release();
+    return getProductImage;
+}
+
+//상품 정보 조회
+exports.getProductInfo = async function(productId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getProductInfo = await storeDao.selectProductInfo(connection, productId);
+    connection.release();
+    return getProductInfo;
+}
+
+//스타일링 샷 조회
+exports.getStylingShot = async function(productId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getStylingShot= await storeDao.selectStylingShot(connection, productId);
+    connection.release();
+    return getStylingShot;
+}
+
+//상품 소개 조회
+exports.getProductIntro = async function(productId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getProductIntro = await storeDao.selectProductIntro(connection, productId);
+    connection.release();
+    return getProductIntro;
+}
+
+//상품 리뷰 점수 정리
+exports.getReviewTotal = async function(productId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getReviewTotal = await storeDao.selectReviewTotal(connection, productId);
+    connection.release();
+    return getReviewTotal;
+}
+
+
+//상품 리뷰 조회
+exports.getProductReview = async function(productId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getProductReview = await storeDao.selectProductReview(connection, productId);
+    connection.release();
+    return getProductReview;
+}
+
+//리뷰 사진만 조회
+exports.getReviewPhoto = async function(productId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getReviewPhoto = await storeDao.selectReviewPhoto(connection, productId);
+    connection.release();
+    return getReviewPhoto;
+}
+
+//상품 문의 수 조회
+exports.getProductInquiryCount = async function(productId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getProductInquiryCount = await storeDao.selectProductInquiryCount(connection, productId);
+    connection.release();
+    return getProductInquiryCount;
+}
+
+//비슷한 상품 조회
+exports.getSimilarProduct = async function(largeCategoryId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getSimilarProduct = await storeDao.selectSimilarProduct(connection, largeCategoryId);
+    connection.release();
+    return getSimilarProduct;
+}
+

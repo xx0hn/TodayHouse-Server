@@ -464,3 +464,24 @@ exports.postInquiry = async function(userId, productId, categoryId, contents){
         return errResponse(baseResponse.DB_ERROR);
     }
 }
+
+//주문 생성
+exports.postOrder = async function (orderInfoParams, point, userId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    try{
+        await connection.beginTransaction();
+        const postOrder = await userDao.postOrder(connection, orderInfoParams);
+        const decreasePoint = await userDao.decreasePoint(connection,point, userId);
+        await connection.commit();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - postOrder Transaction Service error\n: ${err.message}`);
+        await connection.rollback();
+        return errResponse(baseResponse.DB_ERROR);
+    }
+    finally {
+        connection.release();
+    }
+}
+
+//상품 조회 수 증가

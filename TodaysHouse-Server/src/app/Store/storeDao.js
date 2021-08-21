@@ -1161,6 +1161,263 @@ where b.id = ? ;`;
     return brandRows;
 }
 
+//이메일 뒷자리 조회
+async function selectBackEmail(connection){
+    const selectBackEmailQuery=`
+    select id, contents
+    from BackEmail
+    where status = 'ACTIVE'
+    order by id asc`;
+    const [backRows] = await connection.query(selectBackEmailQuery);
+    return backRows;
+}
+
+//배송 요청사항 조회
+async function selectRequests(connection){
+    const selectRequestQuery=`
+    select id, contents
+    from Request
+    where status = 'ACTIVE'
+    order by id asc;`;
+    const [requestsRows] = await connection.query(selectRequestQuery);
+    return requestsRows;
+}
+
+//상품 이미지 조회
+async function selectProductImage(connection, productId){
+    const selectProductImageQuery=`
+    select imageUrl
+from ProductImageUrl 
+where productId = ?;`;
+    const [imageRows] = await connection.query(selectProductImageQuery, productId);
+    return imageRows;
+}
+
+//상품 정보 조회
+async function selectProductInfo(connection, productId){
+    const selectProductInfoQuery=`
+    select d.name as BrandName
+        , a.name as ProductName
+        , case when starGrade is null then 0 else starGrade end as StarGrade
+        , case when reviewCount is null then 0 else reviewCount end as ReviewCount
+        , concat(a.discount, '%') as Discount
+        , format(a.cost, 0) as Cost
+        , format(a.saleCost, 0) as SaleCost
+        , a.benefit as Benefit
+        , concat(format(b.delCost, 0), '원') as DeliveryCost
+        , b.delMethod as DeliveryType
+        , a.largeCategoryId as largeCategoryId
+from Product a
+left join ( select id
+                    , delCost
+                        , delMethod
+                from DeliveryInfo) as b
+                on a.delInfoId = b.id
+left join ( select id
+                        , productId
+                        , starPoint
+                        , round(sum(starPoint)/count(productId), 1) as 'starGrade'
+                        , count(productId) as 'reviewCount'
+                from ProductReview 
+                group by productId) as c
+                on a.id = c.productId
+left join ( select id
+                    , name
+                from Brand ) as d
+                on a.brandId = d.id
+where a.id = ?;`;
+    const [infoRows] = await connection.query(selectProductInfoQuery, productId);
+    return infoRows;
+}
+
+//스타일링샷 조회
+async function selectStylingShot(connection, productId){
+    const selectStylingShotQuery=`
+    select c.imageUrl as Image
+        , e.nickName as UserNickName
+        , e.profileImageUrl as ProfileImage
+from Product a
+left join ( select id
+                        , productId
+                        , houseWarmContentsId
+                        , status
+                from HouseWarmContentsProductMapping ) as b
+                on a.id = b.productId
+left join ( select id
+                        , imageUrl
+                        ,houseWarmId
+            from HouseWarmContents ) as c
+            on b.houseWarmContentsId = c.id
+left join ( select id
+                    , userId
+                from HouseWarm) as d
+                on c. houseWarmId = d.id
+left join ( select id
+                    , nickName
+                    , profileImageUrl
+                from User ) as e
+                on d.userId = e.id
+where a.id = ? and b.status = 'ACTIVE';`;
+    const [stylingShotRows] = await connection.query(selectStylingShotQuery, productId);
+    return stylingShotRows;
+}
+
+//상품 소개 조회
+async function selectProductIntro(connection, productId){
+    const selectProductIntroQuery=`
+    select imageUrl
+from ProductInfo 
+where productId = ?;`;
+    const [infoRows] = await connection.query(selectProductIntroQuery, productId);
+    return infoRows;
+}
+
+//리뷰 정리
+async function selectReviewTotal(connection, productId){
+    const selectReviewTotalQuery=`
+    select 5count
+        , 4count
+        , 3count
+        , 2count
+        ,1count
+from Product a
+left join ( select id
+                        , productId
+                        , imageUrl
+                        , contents
+                        , starPoint
+                        , createdAt
+                        , status
+                        , round(sum(starPoint)/count(productId), 1) as 'starGrade'
+                        , count(productId) as 'reviewCount'
+                        , count(case when starPoint = 5 then 1 end) as '5count'
+                        , count(case when starPoint= 4 then 1 end) as '4count'
+                        , count(case when starPoint=3 then 1 end) as '3count'
+                        , count(case when starPoint=2 then 1 end) as '2count'
+                        , count(case when starPoint=1 then 1 end) as '1count'
+                from ProductReview
+                group by productId) as b
+                on a.id = b.productId
+where a.id = ? and b.status = 'ACTIVE';`;
+    const [totalRows] = await connection.query(selectReviewTotalQuery, productId);
+    return totalRows;
+}
+
+//상품 리뷰 사진만 조회
+async function selectReviewPhoto(connection, productId){
+    const selectReviewPhotoQuery=`
+    select imageUrl
+    from ProductReview
+    where productId = ? and status = 'ACTIVE'
+    order by createdAt desc;`;
+    const [photoRows] = await connection.query(selectReviewPhotoQuery, productId);
+    return photoRows;
+}
+
+//상품 리뷰 조회
+async function selectProductReview(connection, productId){
+    const selectProductReviewQuery=`
+        select c.nickName as UserNickName
+             , c.profileImageUrl as ProfileImage
+             , b.starPoint as StarPoint
+             , date_format(b.createdAt, "%Y-%m-%d") as CreatedAt
+             , b.imageUrl as Image
+             , b.contents as Contents
+        from Product a
+                 left join ( select id
+                                  , productId
+                                  , imageUrl
+                                  , contents
+                                  , starPoint
+                                  , createdAt
+                                  , status
+                                  , userId
+                             from ProductReview) as b
+                           on a.id = b.productId
+                 left join ( select id
+                                  , nickName
+                                  , profileImageUrl
+                             from User ) as c
+                           on b.userId = c.id
+        where a.id = ? and b.status = 'ACTIVE';`;
+    const [reviewRows] = await connection.query(selectProductReviewQuery, productId);
+    return reviewRows;
+}
+
+//상품 문의수 조회
+async function selectProductInquiryCount(connection, productId){
+    const selectProductInquiryCountQuery=`
+    select case when count(productId) is null then 0 else count(productId) end as InquiryCount
+    from Inquiry
+    where productId = ? and status ='ACTIVE'
+    group by productId;`;
+    const [inquiryRows] = await connection.query(selectProductInquiryCountQuery, productId);
+    return inquiryRows;
+}
+
+//비슷한 상품 조회
+async function selectSimilarProduct(connection, largeCategoryId){
+    const selectSimilarProductQuery=`
+    select c.imageUrl as Image
+        , e.name as BrandName
+        , a.name as ProductName
+        , concat(a.discount, '%') as Discount
+        , format(a.saleCost,0) as SaleCost
+        , case when starGrade is null then 0 else starGrade end as StarGrade
+        , case when reviewCount is null then 0 else reviewCount end as ReviewCount
+        , case when f.delCost = 0 then '무료배송' end as DelCostType
+        , case when a.discount is not null then '특가' end as SpecialPrice
+from Product a
+left join ( select id
+                    , productId
+                    , count(productId) as countOrders
+                from Orders
+                group by productId) as b
+                on a.id = b.productId
+left join ( select id
+                    , productId
+                    , imageUrl
+                from ProductImageUrl ) as c
+                on a.id = c.productId
+left join ( select id
+                    , productId
+                    , starPoint
+                    , round(sum(starPoint) / count(productId), 1) as 'starGrade'
+                    , count(productId) as 'reviewCount'
+                from ProductReview 
+                group by productId) as d
+                on a.id = c.productId
+left join ( select id
+                    , name
+                from Brand) as e
+                on a.brandId = e.id
+left join  ( select id
+                    , delCost
+                from DeliveryInfo ) as f
+                on a.delInfoId = f.id
+left join ( select id
+                    , productId
+                    , houseWarmContentsId
+                    , count(houseWarmContentsId) as 'photoCount'
+            from HouseWarmContentsProductMapping
+            group by houseWarmContentsId) as g
+            on g.productId = a.id
+where a.status = 'ACTIVE' and a.largeCategoryId = ?
+group by a.id ;`;
+    const [similarRows] = await connection.query(selectSimilarProductQuery, largeCategoryId);
+    return similarRows;
+}
+
+//상품 조회수 증가
+async function addViewCount(connection, productId){
+    const addViewCountQuery=`
+    update Product
+    set viewCount = viewCount+1
+    where id =?;`;
+    const [viewCountRows] = await connection.query(addViewCountQuery, productId);
+    return viewCountRows;
+}
+
 module.exports = {
     selectMiddleCategory,
     selectSmallCategory,
@@ -1192,4 +1449,16 @@ module.exports = {
     selectExchangeInfo,
     selectRefundInfo,
     selectBrandInfo,
+    selectBackEmail,
+    selectRequests,
+    selectProductImage,
+    selectProductInfo,
+    selectStylingShot,
+    selectProductIntro,
+    selectReviewTotal,
+    selectProductReview,
+    selectProductInquiryCount,
+    selectSimilarProduct,
+    addViewCount,
+    selectReviewPhoto
 }

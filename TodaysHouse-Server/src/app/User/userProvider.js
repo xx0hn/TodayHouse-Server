@@ -378,3 +378,51 @@ exports.getPopularProduct = async function(){
   connection.release();
   return getPopularProduct;
 }
+
+//쿠폰 가격 조회
+exports.getTotalCost = async function(productId, productOptionId, couponId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getTotalCost = await userDao.selectTotalCost(connection, productId, productOptionId, couponId);
+  connection.release();
+  return getTotalCost;
+}
+
+//추가옵션 쿠폰 가격 조회
+exports.getTotalAddCost = async function(productId, productOptionId, addOptionId, couponId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getTotalAddCost = await userDao.selectTotalAddCost(connection, productId, productOptionId, addOptionId, couponId);
+  connection.release();
+  return getTotalAddCost;
+}
+
+//쿠폰 없는 가격 조회
+exports.getNoCouponCost = async function(productId, productOptionId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getNoCouponCost = await userDao.selectNoCouponCost(connection, productId, productOptionId);
+  connection.release();
+  return getNoCouponCost;
+}
+
+//쿠폰 없는 추가 옵션 있는 가격 조회
+exports.getNoCouponAddCost = async function(productId, productOptionId, addOptionId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getNoCouponAddCost = await userDao.selectNoCouponAddCost(connection, productId, productOptionId, addOptionId);
+  connection.release();
+  return getNoCouponAddCost;
+}
+
+//배송비 조회
+exports.getDelCost = async function(productId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getDelCost = await userDao.selectDelCost(connection, productId);
+  connection.release();
+  return getDelCost;
+}
+
+//사용 가능 쿠폰 조회
+exports.getAbleCoupons = async function(userId, productId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getAbleCoupon = await userDao.selectAbleCoupons(connection,userId, productId);
+  connection.release();
+  return getAbleCoupon;
+}

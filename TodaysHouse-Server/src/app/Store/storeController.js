@@ -157,6 +157,31 @@ exports.getCategoryProduct = async function(req, res){
 }
 
 /**
+ * API No. 23
+ * API Name : 상품 조회 API
+ * [GET] /app/products/:productId
+ */
+exports.getProduct = async function(req, res){
+    const productId = req.params.productId;
+    if(!productId) return res.send(response(baseResponse.PRODUCT_ID_EMPTY));
+    const getProductImage = await storeProvider.getProductImage(productId);
+    const getProductInfo = await storeProvider.getProductInfo(productId);
+    const getStylingShot = await storeProvider.getStylingShot(productId);
+    const getProductIntro = await storeProvider.getProductIntro(productId);
+    const getProductReview = await storeProvider.getProductReview(productId);
+    const getReviewTotal = await storeProvider.getReviewTotal(productId);
+    const getReviewPhoto = await storeProvider.getReviewPhoto(productId);
+    const getProductInquiryCount = await storeProvider.getProductInquiryCount(productId);
+    const getSimilarProduct = await storeProvider.getSimilarProduct(getProductInfo[0].largeCategoryId);
+    const addProductViewCount = await storeService.addProductViewCount(productId);
+    const result=[];
+    result.push({ProductImage: getProductImage, ProductInfo: getProductInfo, ProductStylingShot: getStylingShot,
+                ProductIntro: getProductIntro,TotalReview: getReviewTotal, ReviewPhoto:getReviewPhoto, ProductReview: getProductReview, ProductInquiryCount: getProductInquiryCount,
+                SimilarProduct: getSimilarProduct});
+    return res.send(response(baseResponse.SUCCESS, result));
+}
+
+/**
  * API No. 26
  * API Name : 문의 조회 API
  * [GET] /app/products/productId/inquiry
@@ -187,4 +212,24 @@ exports.getInfo = async function(req, res){
     const result=[];
     result.push({DeliveryInfo: getDeliveryInfo, ExchangeInfo: getExchangeInfo, RefundInfo: getRefundInfo, BrandInfo: getBrandInfo});
     return res.send(response(baseResponse.SUCCESS, result));
+}
+
+/**
+ * API No. 38
+ * API Name : 이메일 뒷자리 조회 API
+ * [GET] /app/backemails
+ */
+exports.getBackEmail = async function(req, res){
+    const getBackEmail = await storeProvider.getBackEmail();
+    return res.send(response(baseResponse.SUCCESS, getBackEmail));
+}
+
+/**
+ * API No. 40
+ * API Name : 배송 요청 사항 조회 API
+ * [GET] /app/requests
+ */
+exports.getRequests = async function(req, res){
+    const getRequests = await storeProvider.getRequests();
+    return res.send(response(baseResponse.SUCCESS, getRequests));
 }

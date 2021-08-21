@@ -2,7 +2,7 @@ module.exports = {
 
     // Success
     SUCCESS : { "isSuccess": true, "code": 1000, "message":"성공" },
-    INCREASED_VIEW_COUNT:  { "isSuccess": true, "code": 1001, "message": "조회수가 증가했습니다. "},
+    INCREASED_VIEW_COUNT:  { "isSuccess": true, "code": 1002, "message": "조회수가 증가했습니다. "},
 
     // Common
     TOKEN_EMPTY : { "isSuccess": false, "code": 2000, "message":"JWT 토큰을 입력해주세요." },
@@ -79,6 +79,15 @@ module.exports = {
     INQUIRY_CONTENTS_EMTPY:{ "isSuccess": false, "code": 2047, "message": "문의 내용을 입력해주세요. " },
 
     SORT_TYPE_EMPTY:{ "isSuccess": false, "code": 2048, "message": "정렬 우선순위를 입력해주세요. " },
+
+    PRODUCT_INFO_EMPTY:{ "isSuccess": false, "code": 2049, "message": "상품 정보를 입력해주세요. " },
+    ORDERER_INFO_EMPTY:{ "isSuccess": false, "code": 2050, "message": "주문자 정보를 입력해주세요. " },
+    DESTINATION_INFO_EMPTY:{ "isSuccess": false, "code": 2051, "message": "배송지 정보를 입력해주세요. " },
+    BACKEMAIL_EMPTY:{ "isSuccess": false, "code": 2052, "message": "이메일 뒷자리를 입력해주세요. " },
+    ORDER_REQUEST_CONTENTS_EMPTY:{ "isSuccess": false, "code": 2053, "message": "주문 요청사항을 입력해주세요. " },
+    ORDER_PAY_METHOD_EMPTY:{ "isSuccess": false, "code": 2053, "message": "결제 수단을 입력해주세요. " },
+
+    ORDER_ID_EMPTY:{ "isSuccess": false, "code": 2054, "message": "주문 id를 입력해주세요. " },
 
     // Response error
     SIGNUP_REDUNDANT_EMAIL : { "isSuccess": false, "code": 3001, "message":"중복된 이메일입니다." },

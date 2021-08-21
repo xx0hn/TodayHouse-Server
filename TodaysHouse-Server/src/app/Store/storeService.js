@@ -14,3 +14,15 @@ const crypto = require("crypto");
 const {connect} = require("http2");
 
 
+//상품 조회 수 증가
+exports.addProductViewCount = async function (productId){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const addViewCount = await storeDao.addViewCount(connection, productId);
+        connection.release();
+        return response(baseResponse.INCREASED_VIEW_COUNT);
+    } catch(err){
+        logger.error(`App - increaseViewCount Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}

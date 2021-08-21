@@ -1170,6 +1170,155 @@ async function postInquiry(connection, userId, productId, categoryId, contents){
   return postInquiryRows;
 }
 
+//전체 가격 조회
+async function selectTotalCost(connection, productId, productOptionId, couponId){
+  const selectTotalCostQuery=`
+  select case when c.discount is not null then (d.cost+b.delCost-c.discount) when c.discountPercent is not null then (d.cost+e.cost)*((100-c.discountPercent)/100) end as totalCost
+from Product a
+left join ( select id
+                    , delCost
+                from DeliveryInfo ) as b
+                on a.delInfoId = b.id
+left join ( select id
+                        , productId
+                        , discount
+                        , discountPercent
+                from Coupon ) as c
+                on a.id = c.productId
+left join ( select id
+                        , productId
+                        , cost
+                from ProductOption ) as d
+                on a.id = d.productId
+where a.id = ? and d.id = ? and c.id = ?;`;
+  const [totalCostRows] = await connection.query(selectTotalCostQuery, [productId, productOptionId, couponId]);
+  return totalCostRows;
+}
+
+//전체 추가 옵션, 쿠폰 가격 조회
+async function selectTotalAddCost(connection, productId, productOptionId, addOptionId, couponId){
+  const selectTotalCostQuery=`
+  select case when c.discount is not null then (d.cost++e.const-c.discount) when c.discountPercent is not null then (d.cost+e.cost)*((100-c.discountPercent)/100) end as totalCost
+from Product a
+left join ( select id
+                    , delCost
+                from DeliveryInfo ) as b
+                on a.delInfoId = b.id
+left join ( select id
+                        , productId
+                        , discount
+                        , discountPercent
+                from Coupon ) as c
+                on a.id = c.productId
+left join ( select id
+                        , productId
+                        , cost
+                from ProductOption ) as d
+                on a.id = d.productId
+left join ( select id
+                        , productId
+                        , cost
+                from AddOption ) as e
+                on a.id = e.productId
+where a.id = ? and d.id = ? and e.id = ? and c.id = ?;`;
+  const [totalCostRows] = await connection.query(selectTotalCostQuery, [productId, productOptionId, addOptionId, couponId]);
+  return totalCostRows;
+}
+
+//쿠폰 없는 가격 조회
+async function selectNoCouponCost(connection, productId, productOptionId){
+  const selectNoCouponCostQuery=`
+  select (d.cost) as totalCost
+from Product a
+left join ( select id
+                , delCost
+                from DeliveryInfo ) as b
+                on a.delInfoId = b.id
+left join ( select id
+                 , productId
+                 , cost
+            from ProductOption ) as d
+          on a.id = d.productId
+where a.id = ? and d.id = ?;`;
+  const [totalCostRows] = await connection.query(selectNoCouponCostQuery, [productId, productOptionId]);
+  return totalCostRows;
+}
+
+//쿠폰 없는 추가옵션 있는 가격 조회
+async function selectNoCouponAddCost(connection, productId, productOptionId, addOptionId){
+  const selectNoCouponCostQuery=`
+  select (d.cost+e.cost) as totalCost
+from Product a
+left join ( select id
+                , delCost
+                from DeliveryInfo ) as b
+                on a.delInfoId = b.id
+left join ( select id
+                 , productId
+                 , cost
+            from ProductOption ) as d
+          on a.id = d.productId
+left join ( select id
+                , productId
+                , cost
+            from AddOption ) as e
+            on a.id = e.productId
+where a.id = ? and d.id = ? and e.id = ?;`;
+  const [totalCostRows] = await connection.query(selectNoCouponCostQuery, [productId, productOptionId, addOptionId]);
+  return totalCostRows;
+}
+
+//주문 생성
+async function postOrder(connection, orderInfoParams){
+  const postOrderQuery=`
+  insert into Orders(userId, productId, productOptionId, addOptionId, count, couponId, senderName, frontEmail, backEmailId, backEmail, senderPhoneNum, receiverName, receiverPhoneNum, roadAddress, detailAddress, requestId, requestContents, point, totalCost)
+  values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);`;
+  const [orderRows] = await connection.query(postOrderQuery, orderInfoParams);
+  return orderRows;
+}
+
+//포인트 차감
+async function decreasePoint(connection, point, userId){
+  const decreasePointQuery=`
+  update User
+  set point = point - ?
+  where id = ?;`;
+  const [pointRows] = await connection.query(decreasePointQuery, [point, userId]);
+  return pointRows;
+}
+
+//배송비 조회
+async function selectDelCost(connection, productId){
+  const selectDelCostQuery=`
+  select case when a.payMethod = '착불' then 0 else a.delCost end as delCost
+  from DeliveryInfo a
+  left join ( select id
+                    , delInfoId
+                from Product ) as b
+                on a.id = b.delInfoId
+  where b.id = ?;`;
+  const [delCostRows] = await connection.query(selectDelCostQuery, productId);
+  return delCostRows;
+}
+
+//사용 가능 쿠폰 조회
+async function selectAbleCoupons (connection, userId, productId){
+  const selectAbleCouponsQuery=`
+  select a.id as CouponId, a.name as CouponName
+  from Coupon a
+  left join ( select id
+                    , brandId
+                from Product ) as b
+                on a.brandId = b.brandId
+  left join ( select id
+                from Brand ) as c
+                on a.brandId = c.id
+  where a.userId = ? and b.id = ? and a.status = 'ACTIVE';`;
+  const [ableCouponRows] = await connection.query(selectAbleCouponsQuery, [userId, productId]);
+  return ableCouponRows;
+
+}
+
 
 module.exports = {
   selectUser,
@@ -1245,4 +1394,12 @@ module.exports = {
   selectPopularProduct,
   selectPopularKeyword,
   postInquiry,
+  selectTotalCost,
+  selectNoCouponCost,
+  selectNoCouponAddCost,
+  selectTotalAddCost,
+  postOrder,
+  decreasePoint,
+  selectDelCost,
+  selectAbleCoupons,
 };

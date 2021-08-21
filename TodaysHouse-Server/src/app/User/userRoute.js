@@ -92,6 +92,9 @@ module.exports = function(app){
     // 25. 문의 생성 API
     app.post('/app/users/:userId/inquiry', jwtMiddleware, user.postInquiry);
 
+    // 28. 주문 생성 API
+    app.post('/app/users/:userId/orders', jwtMiddleware, user.postOrder);
+
 
     // 31. 자동 로그인 API
     app.get('/app/auto-login', jwtMiddleware, user.jwtCheck);
@@ -104,6 +107,11 @@ module.exports = function(app){
 
     // 34. 확인 비밀번호 체크 API
     app.get('/app/passwords', user.passwordCheck);
+
+
+    // 39. 사용 가능 쿠폰 조회 API
+    app.get('/app/users/:userId/coupons', jwtMiddleware, user.getCoupons);
+
 
     //  유저 조회 API (+ 검색)
     app.get('/app/users',user.getUsers); 

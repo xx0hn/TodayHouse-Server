@@ -542,6 +542,28 @@ exports.patchComment = async function(req, res){
 }
 
 /**
+ * API No. 21
+ * API Name : 스토어 홈 조회 API
+ * [GET] /app/users/:userId/store-home
+ */
+exports.getStoreHome = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    const getStoreCategory = await userProvider.getStoreCategory();
+    const getRecentProduct = await userProvider.getRecentProduct(userId);
+    const getRecentSimilarProduct = await userProvider.getRecentSimilarProduct(getRecentProduct[0].CategoryId);
+    const getPopularKeyword = await userProvider.getPopularKeyword();
+    const getPopularProduct = await userProvider.getPopularProduct();
+    const result = [];
+    result.push({ProductCategories: getStoreCategory, RecentViewedProduct: getRecentProduct
+        , RecentViewedSimilarProduct: getRecentSimilarProduct, PopularKeyword: getPopularKeyword
+        , PopularProduct: getPopularProduct});
+    return res.send(response(baseResponse.SUCCESS, result));
+}
+/**
  * API No. 25
  * API Name : 문의 생성 API
  * [POST] /app/users/:userId/Inquiry
@@ -561,30 +583,57 @@ exports.postInquiry = async function(req, res){
     return res.send(response(postInquiry));
 }
 
-
-
 /**
- * API No. 21
- * API Name : 스토어 홈 조회 API
- * [GET] /app/users/:userId/store-home
+ * API No. 28
+ * API Name : 주문 생성 API
+ * [POST] /app/users/:userId/orders
  */
-exports.getStoreHome = async function(req, res){
+exports.postOrder = async function (req, res){
     const userIdFromJWT = req.verifiedToken.userId;
     const userId = req.params.userId;
+    const {productId, productOptionId, addOptionId, count, couponId, senderName, frontEmail, backEmailId, backEmail, senderPhoneNum, receiverName, receiverPhoneNum, roadAddress, detailAddress, requestId, requestContents, point} = req.body;
+    let total;
+    const getDelCost = await userProvider.getDelCost(productId);
     if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
     if(userIdFromJWT!=userId)
         res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
-    const getStoreCategory = await userProvider.getStoreCategory();
-    const getRecentProduct = await userProvider.getRecentProduct(userId);
-    const getRecentSimilarProduct = await userProvider.getRecentSimilarProduct(getRecentProduct[0].CategoryId);
-    const getPopularKeyword = await userProvider.getPopularKeyword();
-    const getPopularProduct = await userProvider.getPopularProduct();
-    const result = [];
-    result.push({ProductCategories: getStoreCategory, RecentViewedProduct: getRecentProduct
-                , RecentViewedSimilarProduct: getRecentSimilarProduct, PopularKeyword: getPopularKeyword
-                , PopularProduct: getPopularProduct});
-    return res.send(response(baseResponse.SUCCESS, result));
+    if(!productId || !productOptionId || !count) return res.send(response(baseResponse.PRODUCT_INFO_EMPTY));
+    if(!senderName || !frontEmail || !backEmailId || !senderPhoneNum)
+        return res.send(response(baseResponse.ORDERER_INFO_EMPTY));
+    if(backEmailId === '10') {
+        if (!backEmail) return res.send(response(baseResponse.BACKEMAIL_EMPTY));
+    }
+    if(!receiverName || !receiverPhoneNum || !roadAddress || !detailAddress)
+        return res.send(response(baseResponse.DESTINATION_INFO_EMPTY));
+    if(requestId === '5'){
+        if(!requestContents) return res.send(response(baseResponse.ORDER_REQUEST_CONTENTS_EMPTY));
+    }
+    if(couponId===null){
+        if(addOptionId===null) {
+            const getTotalCost = await userProvider.getNoCouponCost(productId, productOptionId);
+            total = ((getTotalCost[0].totalCost)*count)+getDelCost[0].delCost-point;
+        }
+        else if(addOptionId){
+            const getTotalCost = await userProvider.getNoCouponAddCost(productId, productOptionId, addOptionId);
+            total = ((getTotalCost[0].totalCost)*count)+getDelCost[0].delCost-point;
+        }
+    }
+    else if(couponId){
+        if(addOptionId===null) {
+            const getTotalCost = await userProvider.getTotalCost(productId, productOptionId, couponId);
+            total = ((getTotalCost[0].totalCost)*count)+getDelCost[0].delCost-point;
+        }
+        else if(addOptionId){
+            const getTotalCost = await userProvider.getTotalAddCost(productId, productOptionId, addOptionId, couponId);
+            total = ((getTotalCost[0].totalCost)*count)+getDelCost[0].delCost-point;
+        }
+    }
+    const orderInfoParams = [userId, productId, productOptionId, addOptionId, count, couponId, senderName, frontEmail, backEmailId, backEmail, senderPhoneNum, receiverName, receiverPhoneNum, roadAddress, detailAddress, requestId, requestContents, point, total];
+    const postOrder = await userService.postOrder(orderInfoParams, point, userId);
+    return res.send(response(postOrder));
 }
+
+
 
 /**
  * API No.
@@ -639,7 +688,7 @@ exports.jwtCheck = async function (req, res) {
 
 
 /**
- * API No. 36
+ * API No. 32
  * API Name : 이메일 중복 체크 API
  * [GET] /app/emails
  */
@@ -659,7 +708,7 @@ exports.emailCheck = async function(req, res){
 }
 
 /**
- * API No. 37
+ * API No. 33
  * API Name : 닉네임 중복 체크 API
  * [GET] /app/nicknames
  */
@@ -676,7 +725,7 @@ exports.nicknameCheck = async function (req, res){
 }
 
 /**
- * API No. 38
+ * API No. 34
  * API Name : 비밀번호 확인 API
  * [GET] /app/passwords
  */
@@ -707,3 +756,23 @@ exports.passwordCheck = async function(req, res){
     }
     return res.send(response(baseResponse.SUCCESS));
 }
+
+
+
+/**
+ * API No. 39
+ * API Name : 사용 가능 쿠폰 조회 API
+ * [GET] /app/users/:userId/coupons
+ */
+exports.getCoupons = async function (req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {productId} = req.query;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!productId) return res.send(response(baseResponse.PRODUCT_ID_EMPTY));
+    const getCoupons = await userProvider.getAbleCoupons(userId, productId);
+    return res.send(response(baseResponse.SUCCESS, getCoupons));
+}
+

@@ -9,9 +9,18 @@ module.exports = function(app) {
     // 22. 스토어 카테고리로 조회 API
     app.get('/app/products/categories', store.getCategoryProduct);
 
+    // 23. 스토어 특정 상품 조회 API
+    app.get('/app/products/:productId', store.getProduct);
+
     // 26. 문의 조회 API
     app.get('/app/products/:productId/inquiry', store.getInquiry);
 
     // 27. 배송/교환/환불 정보 조회 API
     app.get('/app/products/:productId/info', store.getInfo);
+
+    // 38. 이메일 뒷자리 조회 API
+    app.get('/app/backemails', store.getBackEmail);
+
+    // 40. 배송 요청사항 조회 API
+    app.get('/app/requests', store.getRequests);
 }
