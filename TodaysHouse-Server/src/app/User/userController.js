@@ -757,7 +757,90 @@ exports.passwordCheck = async function(req, res){
     return res.send(response(baseResponse.SUCCESS));
 }
 
+/**
+ * API No. 35
+ * API Name : 나의 쇼핑 조회 API
+ * [GET] /app/users/:userId/myshopping
+ */
+exports.getMyShopping = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    const getMyInfo = await userProvider.getMyInfo(userId);
+    const getIngOrders = await userProvider.getIngOrders(userId);
+    const getCount = await userProvider.getCount(userId);
+    const result =[];
+    result.push({UserInfo: getMyInfo, Orders: getIngOrders, Count: getCount});
+    return res.send(response(baseResponse.SUCCESS, result));
+}
 
+/**
+ * API No. 36
+ * API Name : 주문/배송 조회 API
+ * [GET] /app/users/:userId/orders
+ */
+exports.getOrders = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {period, status} = req.query; // TOTAL/1YEAR/6MONTH/3MONTH/1MONTH, TOTAL/COMPLETE/CANCEL/EXCHANGE/RETURN
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!period) return res.send(response(baseResponse.ORDERED_PERIOD_EMPTY));
+    if(!status) return res.send(response(baseResponse.ORDER_STATUS_EMPTY));
+    if(period==='TOTAL'){
+        if(status==='TOTAL'){
+             const getTotalOrders = await userProvider.getTotalOrders(userId);
+             return res.send(response(baseResponse.SUCCESS, getTotalOrders));
+        }
+        else if(status==='COMPLETE' || status==='CANCEL' || status==='EXCHANGE' || status==='RETURN'){
+            const getOrders = await userProvider.getOrders(userId, status);
+            return res.send(response(baseResponse.SUCCESS, getOrders));
+        }
+        else{
+            return res.send(errResponse(baseResponse.ORDER_STATUS_ERROR));
+        }
+    }
+    else if(period==='365' || period==='180' || period==='90' || period=='30'){
+        if(status==='TOTAL'){
+            const getTotalOrders = await userProvider.totalOrders(userId, period);
+            return res.send(response(baseResponse.SUCCESS, getTotalOrders));
+        }
+        else if(status==='COMPLETE' || status==='CANCEL'  || status==='EXCHANGE' || status==='RETURN'){
+            const getOrders = await userProvider.orders(userId, period, status);
+            return res.send(response(baseResponse.SUCCESS, getOrders));
+        }
+        return res.send(errResponse(baseResponse.ORDER_STATUS_ERROR));
+    }
+    return res.send(errResponse(baseResponse.ORDERED_PERIOD_ERROR));
+}
+
+/**
+ * API No. 37
+ * API Name : 비밀번호 수정 API
+ * [PATCH] /app/users/:userId/password
+ */
+exports.patchPassword = async function (req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {passWord, passWordCheck} = req.body;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if (!passWord)
+        return res.send(response(baseResponse.SIGNUP_PASSWORD_EMPTY));
+    if(passWord.length<8)
+        return res.send(response(baseResponse.SIGNUP_PASSWORD_LENGTH));
+    else if (!regexPW.test(passWord)) {
+        return res.send(response(baseResponse.SIGNUP_PASSWORD_ERROR_TYPE_VAL));
+    }
+    if(!passWordCheck)
+        return res.send(response(baseResponse.SIGNUP_PASSWORD_CHECK_EMPTY));
+    const patchPassword = await userService.patchPassword(userId, passWord, passWordCheck);
+    return res.send(response(patchPassword));
+}
 
 /**
  * API No. 39

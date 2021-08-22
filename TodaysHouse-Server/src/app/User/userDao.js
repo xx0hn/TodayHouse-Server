@@ -1320,6 +1320,246 @@ async function selectAbleCoupons (connection, userId, productId){
 }
 
 
+//비밀번호 변경
+async function patchPassword (connection, hashedPassword, userId){
+  const patchPasswordQuery=`
+  update User
+  set passWord = ?
+  where id = ?;`;
+  const [patchPasswordRows] = await connection.query(patchPasswordQuery, [hashedPassword, userId]);
+  return patchPasswordRows;
+}
+
+//전체 기간, 상태 주문 조회
+async function selectTotalOrders(connection, userId){
+  const selectTotalOrdersQuery=`
+  select a.id as OrderId
+        , date_format(a.createdAt, "%Y-%m-%d") as OrderDate
+        , b.name as ProductName
+        , c.name as BrandName
+        , format((a.totalCost-a.point),0) as TotalCost
+        , a.count as ProductCount
+        , e.delMethod as DeliveryType
+        , case when a.status = 'COMPLETE' then '구매확정' when a.status ='CANCEL' then '취소' when a.status ='EXCHANGE' then '교환' when a.status='RETURN' then '환불' end as Status
+from Orders a
+left join ( select id
+                        , brandId
+                        , name
+                        , delInfoId
+                from Product ) as b
+                on a.productId = b.id
+left join (select id
+                    , name
+                from Brand) as c
+                on b.brandId = c.id
+left join ( select id
+                        , productId
+                        , imageUrl
+                from ProductImageUrl) as d
+                on b.id = d.productId
+left join ( select id
+                 , delMethod
+            from DeliveryInfo ) as e
+          on b.delInfoId = e.id
+where a.userId = ?
+group by a.id
+order by a.createdAt desc;`;
+  const [totalOrderRows] = await connection.query(selectTotalOrdersQuery, userId);
+  return totalOrderRows;
+}
+
+//전체기간, 상태 구분 조회
+async function selectOrders(connection, userId, status){
+  const selectOrdersQuery=`
+    select a.id as OrderId
+        , date_format(a.createdAt, "%Y-%m-%d") as OrderDate
+        , b.name as ProductName
+        , c.name as BrandName
+        , format((a.totalCost-a.point),0) as TotalCost
+        , a.count as ProductCount
+        , e.delMethod as DeliveryType
+        , case when a.status = 'COMPLETE' then '구매확정' when a.status ='CANCEL' then '취소' when a.status ='EXCHANGE' then '교환' when a.status='RETURN' then '환불' end as Status
+from Orders a
+left join ( select id
+                        , brandId
+                        , name
+                        , delInfoId
+                from Product ) as b
+                on a.productId = b.id
+left join (select id
+                    , name
+                from Brand) as c
+                on b.brandId = c.id
+left join ( select id
+                        , productId
+                        , imageUrl
+                from ProductImageUrl) as d
+                on b.id = d.productId
+left join ( select id
+                    , delMethod
+            from DeliveryInfo ) as e
+            on b.delInfoId = e.id
+where a.userId = ? and a.status = ?
+group by a.id
+order by a.createdAt desc;`;
+  const [orderRows] = await connection.query(selectOrdersQuery, [userId, status]);
+  return orderRows;
+}
+
+//기간 구분, 전체상태 조회
+async function totalOrders(connection, userId, period){
+  const totalOrdersQuery=`
+    select a.id as OrderId
+        , date_format(a.createdAt, "%Y-%m-%d") as OrderDate
+        , b.name as ProductName
+        , c.name as BrandName
+        , format((a.totalCost-a.point),0) as TotalCost
+        , a.count as ProductCount
+        , e.delMethod as DeliveryType
+        , case when a.status = 'COMPLETE' then '구매확정' when a.status ='CANCEL' then '취소' when a.status ='EXCHANGE' then '교환' when a.status='RETURN' then '환불' end as Status
+from Orders a
+left join ( select id
+                        , brandId
+                        , name
+                        , delInfoId
+                from Product ) as b
+                on a.productId = b.id
+left join (select id
+                    , name
+                from Brand) as c
+                on b.brandId = c.id
+left join ( select id
+                        , productId
+                        , imageUrl
+                from ProductImageUrl) as d
+                on b.id = d.productId
+left join ( select id
+                 , delMethod
+            from DeliveryInfo ) as e
+          on b.delInfoId = e.id
+where a.userId = ? and timestampdiff(day, current_timestamp, a.createdAt) <= ?
+group by a.id
+order by a.createdAt desc;`;
+  const [orderRows] = await connection.query(totalOrdersQuery, [userId, period]);
+  return orderRows;
+}
+
+//기간, 상태 구분 주문 조회
+async function selectFiltOrders(connection, userId, period, status){
+  const selectFiltOrdersQuery=`
+    select a.id as OrderId
+        , date_format(a.createdAt, "%Y-%m-%d") as OrderDate
+        , b.name as ProductName
+        , c.name as BrandName
+        , format((a.totalCost-a.point),0) as TotalCost
+        , a.count as ProductCount
+        , e.delMethod as DeliveryType
+        , case when a.status = 'COMPLETE' then '구매확정' when a.status ='CANCEL' then '취소' when a.status ='EXCHANGE' then '교환' when a.status='RETURN' then '환불' end as Status
+from Orders a
+left join ( select id
+                        , brandId
+                        , name
+                        , delInfoId
+                from Product ) as b
+                on a.productId = b.id
+left join (select id
+                    , name
+                from Brand) as c
+                on b.brandId = c.id
+left join ( select id
+                        , productId
+                        , imageUrl
+                from ProductImageUrl) as d
+                on b.id = d.productId
+left join ( select id
+                 , delMethod
+            from DeliveryInfo ) as e
+          on b.delInfoId = e.id
+where a.userId = ? and timestampdiff(day, current_timestamp, a.createdAt) <= ? and a.status = ?
+group by a.id
+order by a.createdAt desc;`;
+  const [orderRows] = await connection.query(selectFiltOrdersQuery, [userId, period, status]);
+  return orderRows;
+}
+
+//나의쇼핑정보 조회
+async function selectMyInfo (connection, userId){
+  const selectMyInfoQuery=`
+  select a.id as UserId
+        , case when couponCount is null then 0 else couponCount end as CouponCount
+        , format(a.point, 0) as Point
+        , a.level as Level
+from User a
+left join ( select id
+                        , userId
+                        , count(userId) as 'couponCount'
+                        , status
+                from Coupon 
+                where status = 'ACTIVE'
+                group by userId) as b
+                on a.id = b.userId
+where a.id = ?;`;
+  const [myRows] = await connection.query(selectMyInfoQuery, userId);
+  return myRows;
+}
+
+//진행중인 주문 조회
+async function selectIngOrders(connection, userId){
+  const selectIngOrdersQuery=`
+  select case when count(case when status='WAIT' and a.userId then 1 end) is null then 0 else count(case when status='WAIT' and a.userId then 1 end) end as Waits
+        , case when count(case when status='PAYCOMPLETE' and a.userId then 1 end) is null then 0 else count(case when status='PAYCOMPLETE' and a.userId then 1 end) end as PaymentComplete
+        , case when count(case when status='DELREADY' and a.userId then 1 end) is null then 0 else count(case when status='DELREADY' and a.userId then 1 end) end as DeliveryReady
+        , case when count(case when status='DELIVERY' and a.userId then 1 end) is null then 0 else count(case when status='DELIVERY' and a.userId then 1 end) end as Delivery
+        , case when count(case when status='COMPLETE' and a.userId then 1 end) is null then 0 else count(case when status='COMPLETE' and a.userId then 1 end) end as Complete
+        , case when reviewCount is null then 0 else reviewCount end as Review
+from Orders a
+left join ( select id
+                        , userId
+                        , count(userId) as 'reviewCount'
+                from ProductReview
+                where status = 'ACTIVE'
+                group by userId) as b
+                on a.userId = b.userId
+where a.userId =? and timestampdiff(month, current_timestamp, a.createdAt) < 3
+group by a.userId;`;
+  const [ingRows] = await connection.query(selectIngOrdersQuery, userId);
+  return ingRows;
+}
+
+//상품스크랩북, 문의내역, 리뷰 수 조회
+async function selectCount(connection, userId){
+  const selectCountQuery=`
+  select case when inquiryCount is null then 0 else inquiryCount end as InquiryCount
+        , case when scrapCount is null then 0 else scrapCount end as ScrapCount
+        , case when reviewCount is null then 0 else reviewCount end as ReviewCount
+from User a
+left join ( select id
+                        , userId
+                        , count(userId) as 'inquiryCount'
+                from Inquiry
+                where status = 'ACTIVE'
+                group by userId) as b
+                on a.id = b.userId
+left join ( select id
+                        , userId
+                        , productId
+                        , count(userId) as 'scrapCount'
+                from Scrap
+                where productId is not null and status ='ACTIVE'
+                group by userId) as c
+                on a.id = c.userId
+left join ( select id
+                        , userId
+                        , count(userId) as 'reviewCount'
+                from ProductReview
+                where status ='ACTIVE'
+                group by userId) as d
+                on a.id = d.id
+where a.id = ?;`;
+  const [countRows] = await connection.query(selectCountQuery, userId);
+  return countRows;
+}
+
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -1402,4 +1642,12 @@ module.exports = {
   decreasePoint,
   selectDelCost,
   selectAbleCoupons,
+  patchPassword,
+  selectTotalOrders,
+  selectOrders,
+  totalOrders,
+  selectFiltOrders,
+  selectMyInfo,
+  selectIngOrders,
+  selectCount,
 };

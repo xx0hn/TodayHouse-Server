@@ -484,4 +484,28 @@ exports.postOrder = async function (orderInfoParams, point, userId){
     }
 }
 
-//상품 조회 수 증가
+//비밀번호 변경
+exports.patchPassword = async function (userId, passWord, passWordCheck){
+    try{
+        const hashedPassword = await crypto
+            .createHash("sha512")
+            .update(passWord)
+            .digest("hex");
+        //확인 비밀번호 암호화
+        const hashedPasswordCheck = await crypto
+            .createHash("sha512")
+            .update(passWordCheck)
+            .digest("hex");
+        //비밀번호 확인
+        if(hashedPassword!=hashedPasswordCheck){
+            return errResponse(baseResponse.SIGNUP_PASSWORD_CHECK_NOT_MATCH);
+        }
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const patchPassword = await userDao.patchPassword(connection, hashedPassword, userId);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - patchPassword Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}

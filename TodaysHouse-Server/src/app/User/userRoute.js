@@ -108,6 +108,14 @@ module.exports = function(app){
     // 34. 확인 비밀번호 체크 API
     app.get('/app/passwords', user.passwordCheck);
 
+    // 35. 나의 쇼핑 조회 API
+    app.get('/app/users/:userId/myshopping', jwtMiddleware, user.getMyShopping);
+
+    // 36. 주문/배송 조회 API
+    app.get('/app/users/:userId/orders',jwtMiddleware, user.getOrders);
+
+    // 37. 비밀번호 변경 API
+    app.patch('/app/users/:userId/password',jwtMiddleware, user.patchPassword);
 
     // 39. 사용 가능 쿠폰 조회 API
     app.get('/app/users/:userId/coupons', jwtMiddleware, user.getCoupons);

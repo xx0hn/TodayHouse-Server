@@ -426,3 +426,59 @@ exports.getAbleCoupons = async function(userId, productId){
   connection.release();
   return getAbleCoupon;
 }
+
+//전체 기간, 전체 상태 주문내역 조회
+exports.getTotalOrders = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getTotalOrders = await userDao.selectTotalOrders(connection, userId);
+  connection.release();
+  return getTotalOrders;
+}
+
+//전체 기간, 상태 구분 조회
+exports.getOrders = async function(userId, status){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getOrders = await userDao.selectOrders(connection, userId, status);
+  connection.release();
+  return getOrders;
+}
+
+//기간 구분, 전체 상태 조회
+exports.totalOrders = async function(userId, period){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const totalOrders = await userDao.totalOrders(connection, userId, period);
+  connection.release();
+  return totalOrders;
+}
+
+//기간, 상태 구분 조회
+exports.orders = async function(userId, period, status){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const orders = await userDao.selectFiltOrders(connection, userId, period, status);
+  connection.release();
+  return orders;
+}
+
+//나의쇼핑 정보 조회
+exports.getMyInfo = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getMyInfo = await userDao.selectMyInfo(connection, userId);
+  connection.release();
+  return getMyInfo;
+}
+
+//진행중인 주문 조회
+exports.getIngOrders = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getIngOrders = await userDao.selectIngOrders(connection, userId);
+  connection.release();
+  return getIngOrders;
+}
+
+//상품스크랩북, 문의내역, 리뷰 수 조회
+exports.getCount = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getCount = await userDao.selectCount(connection, userId);
+  connection.release();
+  return getCount;
+}

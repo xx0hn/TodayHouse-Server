@@ -88,7 +88,9 @@ module.exports = {
     ORDER_REQUEST_CONTENTS_EMPTY:{ "isSuccess": false, "code": 2053, "message": "주문 요청사항을 입력해주세요. " },
     ORDER_PAY_METHOD_EMPTY:{ "isSuccess": false, "code": 2053, "message": "결제 수단을 입력해주세요. " },
 
-   ORDER_ID_EMPTY:{ "isSuccess": false, "code": 2054, "message": "주문 id를 입력해주세요. " },
+    ORDER_ID_EMPTY:{ "isSuccess": false, "code": 2054, "message": "주문 id를 입력해주세요. " },
+    ORDERED_PERIOD_EMPTY:{ "isSuccess": false, "code": 2055, "message": "주문 내역 조회 기간을 입력해주세요. " },
+    ORDER_STATUS_EMPTY:{ "isSuccess": false, "code": 2056, "message": "주문 상태를 입력해주세요. " },
 
     // Response error
     SIGNUP_REDUNDANT_EMAIL : { "isSuccess": false, "code": 3001, "message":"중복된 이메일입니다." },
@@ -121,7 +123,8 @@ module.exports = {
     PRODUCT_CATEGORY_ID_ERROR:  { "isSuccess": false, "code": 3020, "message": "카테고리 id를 정확하게 입력해주세요. "},
 
     SORT_TYPE_ERROR:  { "isSuccess": false, "code": 3021, "message": "정렬 우선순위를 정확하게 입력해주세요. (ORDER, POPULAR, LOWPRICE, HIGHPRICE, REVIEW, USERPHOTO, NEW"},
-
+    ORDERED_PERIOD_ERROR:  { "isSuccess": false, "code": 3022, "message": "주문 내역 조회 기간을 정확하게 입력해주세요. (TOTAL, 365, 180, 90, 30)"},
+    ORDER_STATUS_ERROR:  { "isSuccess": false, "code": 3023, "message": "주문 상태를 정확하게 입력해주세요. (TOTAL, COMPLETE, CANCEL, EXCHANGE, RETURN) "},
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},
     SERVER_ERROR : { "isSuccess": false, "code": 4001, "message": "서버 에러"},
