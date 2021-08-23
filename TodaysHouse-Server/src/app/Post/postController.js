@@ -25,7 +25,7 @@ const baseResponseStatus = require('../../../config/baseResponseStatus');
 exports.getPopular = async function(req, res){
     const {categoryId} = req.query;
     const getTodayStory = await postProvider.getTodayStory();
-
+    const getCategory = await postProvider.getCategory();
     const getBest =[];
     const result=[];
     const getCategoryName = await postProvider.getCategoryName(categoryId);
