@@ -633,7 +633,42 @@ exports.postOrder = async function (req, res){
     return res.send(response(postOrder));
 }
 
-
+/**
+ * API No. 28
+ * API Name : 주문 생성 API
+ * [POST] /app/users/:userId/orders
+ */
+exports.postReview = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {productId, ordersId} = req.query;
+    const {strengthPoint, designPoint, costPoint, delPoint, point, imageUrl, contents} = req.body;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(ordersId==='0'){
+        if(!point) return res.send(response(baseResponse.STAR_POINT_EMPTY));
+        if(!contents) return res.send(response(baseResponse.CONTENTS_EMPTY));
+        if(contents.length<20) return res.send(errResponse(baseResponse.CONTENTS_LENGTH_ERROR));
+        const reviewParams = [userId, productId, imageUrl,  point, contents];
+        const postNoOrderReview = await userService.postNoOrderReview(reviewParams);
+        return res.send(response(postNoOrderReview));
+    }
+    else if(!ordersId) return res.send(response(baseResponse.ORDERS_ID_EMPTY));
+    else{
+        if(!productId) return res.send(response(baseResponse.PRODUCT_ID_EMPTY));
+        if(!strengthPoint) return res.send(response(baseResponse.STRENGTH_POINT_EMPTY));
+        if(!designPoint) return res.send(response(baseResponse.DESIGN_POINT_EMPTY));
+        if(!costPoint) return res.send(response(baseResponse.COST_POINT_EMPTY));
+        if(!delPoint) return res.send(response(baseResponse.DEL_POINT_EMPTY));
+        if(!contents) return res.send(response(baseResponse.CONTENTS_EMPTY));
+        if(contents.length<20) return res.send(errResponse(baseResponse.CONTENTS_LENGTH_ERROR));
+        const getOption = await userProvider.getOption(ordersId);
+        const orderedReviewParams = [userId, productId, ordersId, getOption[0].optionId, getOption[0].addOptionId, imageUrl, strengthPoint, designPoint, costPoint, delPoint, contents];
+        const postOrderReview = await userService.postOrderReview(orderedReviewParams);
+        return res.send(response(postOrderReview));
+    }
+}
 
 /**
  * API No.
@@ -859,3 +894,33 @@ exports.getCoupons = async function (req, res){
     return res.send(response(baseResponse.SUCCESS, getCoupons));
 }
 
+/**
+ * API No. 41
+ * API Name : 리뷰 도움 API
+ * [POST] /app/users/:userId/helped-review
+ */
+exports.postHelp = async function (req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {reviewId} = req.body;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!reviewId) return res.send(response(baseResponse.REVIEW_ID_EMPTY));
+    const reviewHelpCheck = await userProvider.reviewHelpCheck(userId, reviewId); //누른적이 있는지
+    if(reviewHelpCheck.length>0){
+        const reviewHelpReCheck = await userProvider.reviewHelpReCheck(userId, reviewId); //눌려져 있는지
+        if(reviewHelpReCheck.length>0){
+            const cancelHelpReview = await userService.cancelHelpReview(userId, reviewId);
+            return res.send(response(cancelHelpReview));
+        }
+        else{
+            const patchHelpReview = await userService.patchHelpReview(userId, reviewId);
+            return res.send(response(patchHelpReview));
+        }
+    }
+    else{
+        const postHelpReview = await userService.postHelpReview(userId, reviewId);
+        return res.send(response(postHelpReview));
+    }
+}

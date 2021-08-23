@@ -12,11 +12,17 @@ module.exports = function(app) {
     // 23. 스토어 특정 상품 조회 API
     app.get('/app/products/users/:userId',jwtMiddleware, store.getProduct);
 
+    // 24. 베스트 상품 조회 API
+    app.get('/app/products/best', store.getBestProduct);
+
     // 26. 문의 조회 API
     app.get('/app/products/:productId/inquiry', store.getInquiry);
 
     // 27. 배송/교환/환불 정보 조회 API
     app.get('/app/products/:productId/info', store.getInfo);
+
+    // 30. 상품 리뷰 조회 API
+    app.get('/app/products/:productId/reviews', store.getReviews);
 
     // 38. 이메일 뒷자리 조회 API
     app.get('/app/backemails', store.getBackEmail);

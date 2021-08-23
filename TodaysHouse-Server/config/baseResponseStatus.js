@@ -72,7 +72,7 @@ module.exports = {
     COMMENT_CONTENT_EMPTY:{ "isSuccess": false, "code": 2042, "message": "댓글 내용을 입력해주세요. " },
     COMMENT_REPLY_ID_EMPTY:{ "isSuccess": false, "code": 2043, "message": "대댓글id를 입력해주세요. " },
 
-    PRODUCT_CATEGORY_ID_EMPTY:{ "isSuccess": false, "code": 2044, "message": "상품 카테고리를 입력해주세요. " },
+    PRODUCT_CATEGORY_ID_EMPTY:{ "isSuccess": false, "code": 2044, "message": "상품 카테고리 id를 입력해주세요. " },
 
     PRODUCT_ID_EMPTY:{ "isSuccess": false, "code": 2045, "message": "상품 id를 입력해주세요. " },
 
@@ -91,6 +91,21 @@ module.exports = {
     ORDER_ID_EMPTY:{ "isSuccess": false, "code": 2054, "message": "주문 id를 입력해주세요. " },
     ORDERED_PERIOD_EMPTY:{ "isSuccess": false, "code": 2055, "message": "주문 내역 조회 기간을 입력해주세요. " },
     ORDER_STATUS_EMPTY:{ "isSuccess": false, "code": 2056, "message": "주문 상태를 입력해주세요. " },
+
+    BEST_TYPE_EMPTY:{ "isSuccess": false, "code": 2057, "message": "베스트 타입을 입력해주세요. " },
+
+    STRENGTH_POINT_EMPTY:{ "isSuccess": false, "code": 2058, "message": "내구성 점수를 입력해주세요. (최대 5점)" },
+    DESIGN_POINT_EMPTY:{ "isSuccess": false, "code": 2059, "message": "디자인 점수를 입력해주세요. (최대 5점)" },
+    COST_POINT_EMPTY:{ "isSuccess": false, "code": 2060, "message": "가격 점수를 입력해주세요. (최대 5점)" },
+    DEL_POINT_EMPTY:{ "isSuccess": false, "code": 2061, "message": "배송 점수를 입력해주세요. (최대 5점)" },
+    STAR_POINT_EMPTY:{ "isSuccess": false, "code": 2062, "message": "만족도 점수를 입력해주세요. (최대 5점)" },
+    CONTENTS_EMPTY:{ "isSuccess": false, "code": 2063, "message": "리뷰 내용을 입력해주세요. " },
+    ORDERS_ID_EMPTY:{ "isSuccess": false, "code": 2064, "message": "주문 id를 입력해주세요. " },
+    REVIEW_ID_EMPTY:{ "isSuccess": false, "code": 2065, "message": "리뷰 id를 입력해주세요. " },
+
+    PHOTO_TYPE_EMPTY:{ "isSuccess": false, "code": 2066, "message": "사진 여부를 입력해주세요. " },
+    POINT_TYPE_EMPTY:{ "isSuccess": false, "code": 2067, "message": "필터링 별점을 입력해주세요. " },
+    OPTION_EMPTY:{ "isSuccess": false, "code": 2068, "message": "상품 필터링 옵션을 입력해주세요. " },
 
     // Response error
     SIGNUP_REDUNDANT_EMAIL : { "isSuccess": false, "code": 3001, "message":"중복된 이메일입니다." },
@@ -125,6 +140,11 @@ module.exports = {
     SORT_TYPE_ERROR:  { "isSuccess": false, "code": 3021, "message": "정렬 우선순위를 정확하게 입력해주세요. (ORDER, POPULAR, LOWPRICE, HIGHPRICE, REVIEW, USERPHOTO, NEW"},
     ORDERED_PERIOD_ERROR:  { "isSuccess": false, "code": 3022, "message": "주문 내역 조회 기간을 정확하게 입력해주세요. (TOTAL, 365, 180, 90, 30)"},
     ORDER_STATUS_ERROR:  { "isSuccess": false, "code": 3023, "message": "주문 상태를 정확하게 입력해주세요. (TOTAL, COMPLETE, CANCEL, EXCHANGE, RETURN) "},
+    BEST_TYPE_ERROR:  { "isSuccess": false, "code": 3024, "message": "베스트 타입을 정확하게 입력해주세요. (NOW, HISTORY) "},
+    CONTENTS_LENGTH_ERROR:  { "isSuccess": false, "code": 3025, "message": "리뷰 내용은 최소 20자 이상 작성해주세요. "},
+    POINT_TYPE_ERROR:  { "isSuccess": false, "code": 3026, "message": "별점 타입을 정확하게 입력해주세요. (0~5) "},
+    PHOTO_TYPE_ERROR:  { "isSuccess": false, "code": 3027, "message": "사진 타입을 정확하게 입력해주세요. (PHOTO, TOTAL) "},
+    REVIEW_SORT_TYPE_ERROR:  { "isSuccess": false, "code": 3028, "message": "리뷰 정렬 우선순위를 정확하게 입력해주세요. (BEST, NEW) "},
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},
     SERVER_ERROR : { "isSuccess": false, "code": 4001, "message": "서버 에러"},

@@ -1560,6 +1560,86 @@ where a.id = ?;`;
   return countRows;
 }
 
+//주문안한 리뷰 생성
+async function postNoOrderReview (connection, reviewParams){
+  const postNoOrderReviewQuery=`
+  insert into ProductReview(userId, productId, imageUrl, starPoint, contents)
+  values(?,?,?,?,?);`;
+  const [postReviewRows] = await connection.query(postNoOrderReviewQuery, reviewParams);
+  return postReviewRows;
+}
+
+//주문한 리뷰 작성
+async function postOrderReview(connection, orderedReviewParams){
+  const postOrderReviewQuery=`
+  insert into ProductReview(userId, productId, ordersId, productOptionId, addOptionId, imageUrl, strengthPoint, designPoint, costPoint, delPoint, starPoint, contents)
+  values(?,?,?,?,?,?,?,?,?,?,round((strengthPoint+designPoint+costPoint+delPoint)/4,1),?);`;
+  const [postReviewRows] = await connection.query(postOrderReviewQuery, orderedReviewParams);
+  return postReviewRows;
+}
+
+//옵션 조회
+async function selectOption(connection, ordersId){
+  const selectOptionQuery=`
+  select productOptionId as optionId
+        , addOptionId as addOptionId
+  from Orders
+  where id = ? and status = 'COMPLETE';`;
+  const [optionsRows] = await connection.query(selectOptionQuery, ordersId);
+  return optionsRows;
+}
+
+//리뷰 도움되요 누른 기록 조회
+async function selectReviewHelpCheck(connection, userId, reviewId){
+  const selectReviewHelpCheckQuery=`
+  select id
+  from ReviewHelp
+  where userId = ? and reviewId = ?;`;
+  const [reviewRows] = await connection.query(selectReviewHelpCheckQuery, [userId, reviewId]);
+  return reviewRows;
+}
+
+//리뷰 도움되요 눌려있는지 조회
+async function selectReviewHelpReCheck(connection, userId, reviewId){
+  const selectReviewHelpReCheckQuery=`
+  select id
+  from ReviewHelp
+  where userId = ? and reviewId = ? and status ='ACTIVE';`;
+  const [reviewRows] = await connection.query(selectReviewHelpReCheckQuery, [userId, reviewId]);
+  return reviewRows;
+}
+
+//리뷰 도움 취소
+async function cancelHelpReview(connection, userId, reviewId){
+  const cancelHelpReviewQuery=`
+  update ReviewHelp
+  set status = 'DELETED'
+  where userId = ? and reviewId = ?;`;
+  const [helpRows] = await connection.query(cancelHelpReviewQuery, [userId, reviewId]);
+  return helpRows;
+}
+
+//리뷰 도움 수정
+async function patchHelpReview(connection, userId, reviewId){
+  const patchHelpReviewQuery=`
+  update ReviewHelp
+  set status = 'ACTIVE'
+  where userId = ? and reviewId = ?;`;
+  const [helpRows] = await connection.query(patchHelpReviewQuery, [userId, reviewId]);
+  return helpRows;
+}
+
+//리뷰 도움 생성
+async function postHelpReview(connection ,userId, reviewId){
+  const postHelpReviewQuery=`
+  insert into ReviewHelp(userId, reviewId)
+  values(?,?);`;
+  const [helpRows] = await connection.query(postHelpReviewQuery, [userId, reviewId]);
+  return helpRows;
+}
+
+
+
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -1650,4 +1730,12 @@ module.exports = {
   selectMyInfo,
   selectIngOrders,
   selectCount,
+  postNoOrderReview,
+  postOrderReview,
+  selectOption,
+  selectReviewHelpCheck,
+  selectReviewHelpReCheck,
+  cancelHelpReview,
+  patchHelpReview,
+  postHelpReview,
 };

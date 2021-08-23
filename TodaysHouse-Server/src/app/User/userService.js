@@ -509,3 +509,68 @@ exports.patchPassword = async function (userId, passWord, passWordCheck){
         return errResponse(baseResponse.DB_ERROR);
     }
 }
+
+//주문 안한 리뷰 작성
+exports.postNoOrderReview = async function(reviewParams){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const postNoOrderReview = await userDao.postNoOrderReview(connection,reviewParams);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - postNoOrderReview Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//주문한 리뷰 작성
+exports.postOrderReview = async function (orderedReviewParams){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const postOrderReview = await userDao.postOrderReview(connection, orderedReviewParams);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - postOrderReview Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//리뷰 도움 취소
+exports.cancelHelpReview = async function (userId, reviewId){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const cancelHelpReview = await userDao.cancelHelpReview(connection, userId, reviewId);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - cancelHelpReview Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//리뷰 도움 수정(눌린 상태로)
+exports.patchHelpReview = async function (userId, reviewId){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const patchHelpReview = await userDao.patchHelpReview(connection, userId, reviewId);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - patchHelpReview Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+//리뷰 도움 생성
+exports.postHelpReview = async function(userId, reviewId){
+    try{
+        const connection = await pool.getConnection(async(conn)=>conn);
+        const postHelpReview = await userDao.postHelpReview(connection, userId, reviewId);
+        connection.release();
+        return response(baseResponse.SUCCESS);
+    } catch(err){
+        logger.error(`App - postHelpReview Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}

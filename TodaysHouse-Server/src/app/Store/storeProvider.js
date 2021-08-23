@@ -321,3 +321,178 @@ exports.getSimilarProduct = async function(largeCategoryId){
     return getSimilarProduct;
 }
 
+//상품 카테고리 전체 조회
+exports.getCategory = async function(){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getCategory = await storeDao.selectTotalCategory(connection);
+    connection.release();
+    return getCategory;
+}
+
+//실시간 베스트 상품 조회
+exports.getNowBestProduct = async function(){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getNowBestProduct = await storeDao.selectNowBestProduct(connection);
+    connection.release();
+    return getNowBestProduct;
+}
+
+//전체 카테고리 역대 베스트 상품 조회
+exports.getHistoryBestProduct = async function(){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getBestProduct = await storeDao.selectBestProduct(connection);
+    connection.release();
+    return getBestProduct;
+}
+
+//카테고리 별 역대 베스트 상품 조회
+exports.getCategoryBest = async function(categoryId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getCategoryBest = await storeDao.selectCategoryBest(connection, categoryId);
+    connection.release();
+    return getCategoryBest;
+}
+
+//현재 시간 불러오기
+exports.getCurrentTimestamp = async function(){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getCurrentTimestamp = await storeDao.selectCurrentTimestamp(connection);
+    connection.release();
+    return getCurrentTimestamp;
+}
+
+//리뷰 분석
+exports.reviewAnalysis = async function(productId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const reviewAnalysis = await storeDao.selectReviewAnalysis(connection, productId);
+    connection.release();
+    return reviewAnalysis;
+}
+
+//베스트순, 노필터 사진 리뷰 조회
+exports.getPhotoReview = async function(productId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getPhotoReview = await storeDao.selectPhotoReview(connection, productId);
+    connection.release();
+    return getPhotoReview;
+}
+
+//베스트순, 상품 옵션 필터 사진 리뷰 조회
+exports.getPhotoOptionReview = async function(productId, optionId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getPhotoOptionReview = await storeDao.selectPhotoOptionReview(connection, productId, optionId);
+    connection.release();
+    return getPhotoOptionReview;
+}
+
+//베스트순, 별점 필터 사진 리뷰 조회
+exports.getPhotoPointReview = async function(productId, pointType,pointTypes){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getPhotoPointReview = await storeDao.selectPhotoPointReview(connection, productId, pointType, pointTypes);
+    connection.release();
+    return getPhotoPointReview;
+}
+
+//베스트순, 별점, 상품 옵션 필터 사진 리뷰 조회
+exports.getPhotoPointOptionReview = async function(productId, pointType, pointTypes, optionId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getPhotoPointOptionReview = await storeDao.selectPhotoPointOptionReview(connection, productId, pointType, pointTypes, optionId);
+    connection.release();
+    return getPhotoPointOptionReview;
+}
+
+//베스트순, 전체 리뷰 조회
+exports.getTotalReview = async function(productId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getTotalReview = await storeDao.selectTotalReview(connection, productId);
+    connection.release();
+    return getTotalReview;
+}
+
+//베스트순, 상품 옵션 필터 전체 리뷰 조회
+exports.getTotalOptionReview = async function(productId, optionId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getTotalOptionReview = await storeDao.selectTotalOptionReview(connection, productId, optionId);
+    connection.release();
+    return getTotalOptionReview;
+}
+
+//베스트순, 별점 필터 전체 리뷰 조회
+exports.getTotalPointReview = async function(productId, pointType, pointTypes){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getTotalPointReview = await storeDao.selectTotalPointReview(connection, productId, pointType, pointTypes);
+    connection.release();
+    return getTotalPointReview;
+}
+
+//베스트순, 별점, 상품 옵션 필터 전체 리뷰 조회
+exports.getTotalPointOptionReview = async function(productId, pointType, pointTypes, optionId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getTotalPointOptionReview = await storeDao.selectTotalPointOptionReview(connection, productId, pointType, pointTypes, optionId);
+    connection.release();
+    return getTotalPointOptionReview;
+}
+
+//최신순, 노필터 사진 리뷰 조회
+exports.getNewPhotoReview = async function(productId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getNewPhotoReview = await storeDao.selectNewPhotoReview(connection, productId);
+    connection.release();
+    return getNewPhotoReview;
+}
+
+//최신순, 상품 옵션 필터 사진 리뷰 조회
+exports.getNewPhotoOptionReview = async function(productId, optionId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getNewPhotoOptionReview = await storeDao.selectNewPhotoOptionReview(connection, productId, optionId);
+    connection.release();
+    return getNewPhotoOptionReview;
+}
+
+//최신순, 별점 필터 사진 리뷰 조회
+exports.getNewPhotoPointReview = async function(productId, pointType, pointTypes){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getNewPhotoPointReview = await storeDao.selectNewPhotoPointReview(connection, productId, pointType, pointTypes);
+    connection.release();
+    return getNewPhotoPointReview;
+}
+
+//최신순, 별점, 상품 옵션 필터 사진 리뷰 조회
+exports.getNewPhotoPointOptionReview = async function(productId, pointType, pointTypes, optionId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getNewPhotoPointOptionReview = await storeDao.selectNewPhotoPointOptionReview(connection, productId, pointType, pointTypes, optionId);
+    connection.release();
+    return getNewPhotoPointOptionReview;
+}
+
+//최신순, 전체 리뷰 조회
+exports.getNewTotalReview = async function(productId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getNewTotalReview = await storeDao.selectNewTotalReview(connection, productId);
+    connection.release();
+    return getNewTotalReview;
+}
+
+//최신순, 상품 옵션 필터 전체 리뷰 조회
+exports.getNewTotalOptionReview = async function(productId, optionId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getNewTotalOptionReview = await storeDao.selectNewTotalOptionReview(connection, productId, optionId);
+    connection.release();
+    return getNewTotalOptionReview;
+}
+
+//최신순, 별점 필터 전체 리뷰 조회
+exports.getNewTotalPointReview = async function(productId, pointType, pointTypes){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getNewTotalPointReview = await storeDao.selectNewTotalPointReview(connection, productId, pointType, pointTypes);
+    connection.release();
+    return getNewTotalPointReview;
+}
+
+//최신순, 별점, 상품 옵션 필터 전체 리뷰 조회
+exports.getNewTotalPointOptionReview = async function(productId, pointType, pointTypes, optionId){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getNewTotalPointOptionReview = await storeDao.selectNewTotalPointOptionReview(connection, productId, pointType, pointTypes, optionId);
+    connection.release();
+    return getNewTotalPointOptionReview;
+}

@@ -482,3 +482,27 @@ exports.getCount = async function(userId){
   connection.release();
   return getCount;
 }
+
+//옵션 조회
+exports.getOption = async function(ordersId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getOption = await userDao.selectOption(connection, ordersId);
+  connection.release();
+  return getOption;
+}
+
+//도움되요 누른 기록 조회
+exports.reviewHelpCheck = async function(userId, reviewId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const reviewHelpCheck = await userDao.selectReviewHelpCheck(connection, userId, reviewId);
+  connection.release();
+  return reviewHelpCheck;
+}
+
+//도움되요가 눌려 있는지 조회
+exports.reviewHelpReCheck = async function(userId, reviewId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const reviewHelpReCheck= await userDao.selectReviewHelpReCheck(connection, userId, reviewId);
+  connection.release();
+  return reviewHelpReCheck;
+}

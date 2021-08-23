@@ -1316,10 +1316,10 @@ left join ( select id
                         , round(sum(starPoint)/count(productId), 1) as 'starGrade'
                         , count(productId) as 'reviewCount'
                         , count(case when starPoint = 5 then 1 end) as '5count'
-                        , count(case when starPoint= 4 then 1 end) as '4count'
-                        , count(case when starPoint=3 then 1 end) as '3count'
-                        , count(case when starPoint=2 then 1 end) as '2count'
-                        , count(case when starPoint=1 then 1 end) as '1count'
+                        , count(case when starPoint >= 4 and starPoint < 5 then 1 end) as '4count'
+                        , count(case when starPoint >= 3 and starPoint < 4 then 1 end) as '3count'
+                        , count(case when starPoint >= 2 and starPoint < 3 then 1 end) as '2count'
+                        , count(case when starPoint >= 1 and starPoint < 2 then 1 end) as '1count'
                 from ProductReview
                 group by productId) as b
                 on a.id = b.productId
@@ -1365,7 +1365,8 @@ async function selectProductReview(connection, productId){
                                   , profileImageUrl
                              from User ) as c
                            on b.userId = c.id
-        where a.id = ? and b.status = 'ACTIVE';`;
+        where a.id = ? and b.status = 'ACTIVE'
+        order by createdAt desc limit 3;`;
     const [reviewRows] = await connection.query(selectProductReviewQuery, productId);
     return reviewRows;
 }
@@ -1454,6 +1455,968 @@ async function addRecentProduct(connection, userId, productId){
     return recentRows;
 }
 
+//전체 카테고리 조회
+async function selectTotalCategory(connection){
+    const selectTotalCategoryQuery=`
+    select name as CategoryName
+        , imageUrl as CategoryImage
+from LargeCategory
+order by id asc;`;
+    const [categoryRows] = await connection.query(selectTotalCategoryQuery);
+    return categoryRows;
+}
+
+//실시간 베스트 상품 조회
+async function selectNowBestProduct(connection){
+    const selectNowBestProductQuery=`
+    select a.id as ProductId
+        , row_number() over(order by orderCount desc) as Ranking
+        , d.imageUrl as ProductImage
+        , b.name as BrandName
+        , a.name as ProductName
+        , case when a.discount is not null then concat(a.discount, '%') end as DiscountPercent
+        , format(a.saleCost, 0) as Cost
+        , case when starGrade is null then 0 else starGrade end as StarGrade
+        , case when reviewCount is null then 0 else reviewCount end as ReviewCount
+        , case when e.delCost  = 0 then '무료배송' end as DeliveryCost
+        , case when a.discount is not null then '특가' end as SpecialPrice
+from Product a
+left join ( select id
+                    , name
+                from Brand) as b
+                on a.brandId = b.id
+left join ( select id
+                        , productId
+                        , starPoint
+                        , round(sum(starPoint)/count(productId), 1) as 'starGrade'
+                        , count(productId) as 'reviewCount'
+                        , status
+                from ProductReview 
+                where status = 'ACTIVE'
+                group by productId) as c
+                on a.id = c.productId
+left join ( select id
+                        , productId
+                        , imageUrl
+                from ProductImageUrl ) as d
+                on a.id = d.id
+left join ( select id
+                        , delCost
+                from DeliveryInfo ) as e
+                on a.delInfoId = e.id
+left join ( select id
+                        , productId
+                        , count(productId) as 'orderCount'
+                        , createdAt
+                        , status
+                from Orders
+                where timestampdiff(day, current_timestamp, createdAt) < 7 and status = 'COMPLETE'
+                group by productId) as f
+                on a.id = f.productId
+where a.status = 'ACTIVE'
+order by orderCount desc;`;
+    const [nowBestProductRows] = await connection.query(selectNowBestProductQuery);
+    return nowBestProductRows;
+}
+
+//전체 카테고리 역대 베스트 상품 조회
+async function selectBestProduct(connection){
+    const selectBestProductQuery=`
+        select a.id as ProductId
+        , row_number() over(order by orderCount desc) as Ranking
+        , d.imageUrl as ProductImage
+        , b.name as BrandName
+        , a.name as ProductName
+        , case when a.discount is not null then concat(a.discount, '%') end as DiscountPercent
+        , format(a.saleCost, 0) as Cost
+        , case when starGrade is null then 0 else starGrade end as StarGrade
+        , case when reviewCount is null then 0 else reviewCount end as ReviewCount
+        , case when e.delCost  = 0 then '무료배송' end as DeliveryCost
+        , case when a.discount is not null then '특가' end as SpecialPrice
+from Product a
+left join ( select id
+                    , name
+                from Brand) as b
+                on a.brandId = b.id
+left join ( select id
+                        , productId
+                        , starPoint
+                        , round(sum(starPoint)/count(productId), 1) as 'starGrade'
+                        , count(productId) as 'reviewCount'
+                        , status
+                from ProductReview 
+                where status = 'ACTIVE'
+                group by productId) as c
+                on a.id = c.productId
+left join ( select id
+                        , productId
+                        , imageUrl
+                from ProductImageUrl ) as d
+                on a.id = d.id
+left join ( select id
+                        , delCost
+                from DeliveryInfo ) as e
+                on a.delInfoId = e.id
+left join ( select id
+                 , productId
+                 , count(productId) as 'orderCount'
+                , status
+            from Orders
+            where status = 'COMPLETE'
+            group by productId) as f
+          on a.id = f.productId
+where a.status = 'ACTIVE'
+order by orderCount desc;`;
+    const [bestProductRows] = await connection.query(selectBestProductQuery);
+    return bestProductRows;
+}
+
+//카테고리별 역대 베스트 상품 조회
+async function selectCategoryBest(connection, categoryId){
+    const selectCategoryBestQuery=`
+        select a.id as ProductId
+        , row_number() over(order by orderCount desc) as Ranking
+        , d.imageUrl as ProductImage
+        , b.name as BrandName
+        , a.name as ProductName
+        , case when a.discount is not null then concat(a.discount, '%') end as DiscountPercent
+        , format(a.saleCost, 0) as Cost
+        , case when starGrade is null then 0 else starGrade end as StarGrade
+        , case when reviewCount is null then 0 else reviewCount end as ReviewCount
+        , case when e.delCost  = 0 then '무료배송' end as DeliveryCost
+        , case when a.discount is not null then '특가' end as SpecialPrice
+from Product a
+left join ( select id
+                    , name
+                from Brand) as b
+                on a.brandId = b.id
+left join ( select id
+                        , productId
+                        , starPoint
+                        , round(sum(starPoint)/count(productId), 1) as 'starGrade'
+                        , count(productId) as 'reviewCount'
+                        , status
+                from ProductReview 
+                where status = 'ACTIVE'
+                group by productId) as c
+                on a.id = c.productId
+left join ( select id
+                        , productId
+                        , imageUrl
+                from ProductImageUrl ) as d
+                on a.id = d.id
+left join ( select id
+                        , delCost
+                from DeliveryInfo ) as e
+                on a.delInfoId = e.id
+left join ( select id
+                 , productId
+                 , count(productId) as 'orderCount'
+                , status
+            from Orders
+            where status = 'COMPLETE'
+            group by productId) as f
+          on a.id = f.productId
+where a.status = 'ACTIVE' and a.largeCategoryId = ?
+order by orderCount desc;`;
+    const [categoryBestRows] = await connection.query(selectCategoryBestQuery, categoryId);
+    return categoryBestRows;
+}
+
+//현재시간 불러오기
+async function selectCurrentTimestamp(connection){
+    const selectCurrentTimestampQuery=`
+    select concat(date_format(current_timestamp, "%Y-%m-%d %H:%m"), ' ', '기준') as CurrentTime;`;
+    const [timeRows] = await connection.query(selectCurrentTimestampQuery);
+    return timeRows;
+}
+
+//리뷰 분석
+async function selectReviewAnalysis(connection, productId){
+    const selectReviewAnalysisQuery=`
+    select a.id as ProductId
+         , case when reviewCount is null then 0 else reviewCount end as ReviewCount
+         , case when starGrade is null then 0 else starGrade end as StarGrade
+        , 5count
+        , 4count
+        , 3count
+        , 2count
+        ,1count
+from Product a
+left join ( select id
+                        , productId
+                        , imageUrl
+                        , contents
+                        , starPoint
+                        , createdAt
+                        , status
+                        , round(sum(starPoint)/count(productId), 1) as 'starGrade'
+                        , count(productId) as 'reviewCount'
+                        , count(case when starPoint = 5 then 1 end) as '5count'
+                        , count(case when starPoint >= 4 and starPoint < 5 then 1 end) as '4count'
+                        , count(case when starPoint >= 3 and starPoint < 4 then 1 end) as '3count'
+                        , count(case when starPoint >= 2 and starPoint < 3 then 1 end) as '2count'
+                        , count(case when starPoint >= 1 and starPoint < 2 then 1 end) as '1count'
+                from ProductReview
+                group by productId) as b
+                on a.id = b.productId
+where a.id = ? and b.status = 'ACTIVE';`;
+    const [totalRows] = await connection.query(selectReviewAnalysisQuery, productId);
+    return totalRows;
+}
+
+//베스트순, 노필터 사진 리뷰 조회
+async function selectPhotoReview(connection, productId){
+    const selectPhotoReviewQuery=`
+    select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and a.imageUrl is not null and a.status = 'ACTIVE'
+order by a.starPoint and a.createdAt desc ;`;
+    const [Rows] = await connection.query(selectPhotoReviewQuery, productId)
+    return Rows;
+}
+
+//베스트순, 상품 옵션 필터 사진 리뷰 조회
+async function selectPhotoOptionReview(connection, productId, optionId){
+    const selectPhotoOptionReviewQuery=`
+        select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and a.productOptionId = ? and a.imageUrl is not null and a.status = 'ACTIVE'
+        group by a.id
+        order by a.starPoint desc ;`;
+    const [Rows] = await connection.query(selectPhotoOptionReviewQuery, [productId, optionId]);
+    return Rows;
+}
+
+//베스트순, 별점 필터 사진 리뷰 조회
+async function selectPhotoPointReview(connection, productId, pointType, pointTypes){
+    const selectPhotoPointReviewQuery=`
+            select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and (a.starPoint >= ? and a.starPoint<?+1) and a.imageUrl is not null and a.status = 'ACTIVE'
+            group by a.id
+            order by a.starPoint desc ;`;
+    const [Rows] = await connection.query(selectPhotoPointReviewQuery, [productId, pointType, pointTypes]);
+    return Rows;
+}
+
+//베스트순, 별점, 상품 옵션 필터 사진 리뷰 조회
+async function selectPhotoPointOptionReview(connection, productId, pointType, pointTypes, optionId){
+    const selectPhotoPointOptionReviewQuery=`
+                select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? (and a.starPoint >= ? and a.starPoint <?+1)  and a.productOptionId = ? and a.imageUrl is not null and a.status = 'ACTIVE'
+                group by a.id
+                order by a.starPoint desc ;`;
+    const [Rows] = await connection.query(selectPhotoPointOptionReviewQuery, [productId, pointType, pointTypes, optionId]);
+    return Rows;
+}
+
+//베스트순, 전체 리뷰 조회
+async function selectTotalReview(connection, productId){
+    const selectTotalReviewQuery=`
+                    select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and a.status = 'ACTIVE'
+                    group by a.id
+                    order by a.starPoint desc ;`;
+    const [Rows] = await connection.query(selectTotalReviewQuery, productId);
+    return Rows;
+}
+
+//베스트순, 상품 옵션 필터 전체 리뷰 조회
+async function selectTotalOptionReview(connection, productId, optionId){
+    const selectTotalOptionReviewQuery=`
+                    select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and a.productOptionId = ? and a.status = 'ACTIVE'
+                    group by a.id
+order by a.starPoint desc ;`;
+    const [Rows] = await connection.query(selectTotalOptionReviewQuery, [productId, optionId]);
+    return Rows;
+}
+
+//베스트순, 별점 필터 전체 리뷰 조회
+async function selectTotalPointReview(connection, productId, pointType, pointTypes){
+    const selectTotalPointReviewQuery=`
+                select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and (a.starPoint >= ? and a.starPoint<?+1) and a.status = 'ACTIVE'
+                group by a.id
+order by a.starPoint desc ;`;
+    const [Rows] = await connection.query(selectTotalPointReviewQuery, [productId, pointType, pointTypes]);
+    return Rows;
+}
+
+//베스트순, 별점, 상품 옵션 필터 전체 리뷰 조회
+async function selectTotalPointOptionReview(connection, productId, pointType, pointTypes, optionId){
+    const selectTotalPointOptionReviewQuery=`
+                    select a.id as ReviewIdt
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and (a.starPoint >= ? and a.starPoint<?+1) and a.productOptionId = ? and a.status = 'ACTIVE'
+                    group by a.id
+order by a.starPoint desc ;`;
+    const [Rows] = await connection.query(selectTotalPointOptionReviewQuery, [productId, pointType, pointTypes, optionId]);
+    return Rows;
+}
+
+//최신순, 노필터 사진 리뷰 조회
+async function selectNewPhotoReview(connection, productId){
+    const selectNewPhotoReviewQuery=`
+        select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and a.imageUrl is not null and a.status = 'ACTIVE'
+        group by a.id
+order by a.createdAt desc ;`;
+    const [Rows] = await connection.query(selectNewPhotoReviewQuery, productId);
+    return Rows;
+}
+
+//최신순, 상품 옵션 필터 사진 리뷰 조회
+async function selectNewPhotoOptionReview(connection, productId, optionId){
+    const selectNewPhotoOptionReviewQuery=`
+            select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and a.productOptionId = ? and a.imageUrl is not null and a.status = 'ACTIVE'
+            group by a.id
+order by a.createdAt desc ;`;
+    const [Rows] = await connection.query(selectNewPhotoOptionReviewQuery, [productId, optionId]);
+    return Rows;
+}
+
+//최신순, 별점 필터 사진 리뷰 조회
+async function selectNewPhotoPointReview(connection, productId, pointType, pointTypes){
+    const selectNewPhotoPointReviewQuery=`
+                select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and (a.starPoint >= ? and a.starPoint<?+1) and a.imageUrl is not null and a.status = 'ACTIVE'
+                group by a.id
+order by a.createdAt desc ;`;
+    const [Rows] = await connection.query(selectNewPhotoPointReviewQuery, [productId, pointType ,pointTypes]);
+    return Rows;
+}
+
+//최신순, 별점, 상품 옵션 필터 사진 리뷰 조회
+async function selectNewPhotoPointOptionReview(connection, productId, pointType, pointTypes, optionId){
+    const selectNewPhotoPointOptionReviewQuery=`
+                    select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and (a.starPoint >= ? and a.starPoint<?+1) and a.productOptionId = ? and a.imageUrl is not null and a.status = 'ACTIVE'
+                    group by a.id
+order by a.createdAt desc ;`;
+    const [Rows] = await connection.query(selectNewPhotoPointOptionReviewQuery, [productId, pointType, pointTypes, optionId]);
+    return Rows;
+}
+
+//최신순, 전체 리뷰 조회
+async function selectNewTotalReview(connection, productId){
+    const selectNewTotalReviewQuery=`
+                        select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and a.status = 'ACTIVE'
+                        group by a.id
+order by a.createdAt desc ;`;
+    const [Rows] = await connection.query(selectNewTotalReviewQuery, productId);
+    return Rows;
+}
+
+//최신순, 상품 옵션 필터 전체 리뷰 조회
+async function selectNewTotalOptionReview(connection, productId, optionId){
+    const selectNewTotalOptionReviewQuery=`
+                            select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and a.productOptionId = ? and a.status = 'ACTIVE'
+                            group by a.id
+order by a.createdAt desc ;`;
+    const [Rows] = await connection.query(selectNewTotalOptionReviewQuery, [productId, optionId]);
+    return Rows;
+}
+
+//최신순, 별점 필터 전체 리뷰 조회
+async function selectNewTotalPointReview(connection, productId, pointType, pointTypes){
+    const selectNewTotalPointReviewQuery=`
+                                select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and (a.starPoint >= ? and a.starPoint<?+1) and a.status = 'ACTIVE'
+                                group by a.id
+order by a.createdAt desc ;`;
+    const [Rows] = await connection.query(selectNewTotalPointReviewQuery, [productId, pointType, pointTypes]);
+    return Rows;
+}
+
+//최신순, 별점, 상품 옵션 필터 전체 리뷰 조회
+async function selectNewTotalPointOptionReview(connection, productId, pointType, pointTypes, optionId){
+    const selectNewTotalPointOptionReviewQuery=`
+                                    select a.id as ReviewId
+        , a.starPoint as StarPoint
+        , a.strengthPoint as StrengthPoint
+        , a.designPoint as DesignPoint
+        , a.costPoint as CostPoint
+        , a.delPoint as DelPoint
+        , date_format(createdAt, "%Y-%m-%d") as ReviewCreatedAt
+        , case when a.ordersId is not null then '오늘의집 구매' else '다른 쇼핑몰 구매' end as OrderType
+        , d.title as OptionType
+        , d.name as OptionName
+        , a.imageUrl as ReviewImage
+        , a.contents as ReviewContents
+        , case when helpCount is null then 0 else helpCount end as HelpCount
+from ProductReview a
+left join ( select id
+                        , nickName
+                        , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                    , name
+                from Product )as c
+                on a.productId = c.id
+left join ( select id
+                        , productId
+                        , title
+                        , name
+                from ProductOption ) as d
+                on a.productId = d.productId
+left join ( select id
+                        , reviewId
+                        , count(reviewId) as 'helpCount'
+                        , status
+                from ReviewHelp
+                where status = 'ACTIVE'
+                group by reviewId ) as e
+                on a.id = e.reviewId
+where a.productId = ? and (a.starPoint >= ? and a.starPoint<?+1) and a.productOptionId = ? and a.status = 'ACTIVE'
+                                    group by a.id
+order by a.createdAt desc ;`;
+    const [Rows] = await connection.query(selectNewTotalPointOptionReviewQuery, [productId, pointType, pointTypes, optionId]);
+    return Rows;
+}
+
+
 module.exports = {
     selectMiddleCategory,
     selectSmallCategory,
@@ -1498,4 +2461,26 @@ module.exports = {
     addViewCount,
     selectReviewPhoto,
     addRecentProduct,
+    selectTotalCategory,
+    selectNowBestProduct,
+    selectBestProduct,
+    selectCategoryBest,
+    selectCurrentTimestamp,
+    selectReviewAnalysis,
+    selectPhotoReview,
+    selectPhotoOptionReview,
+    selectPhotoPointReview,
+    selectPhotoPointOptionReview,
+    selectTotalReview,
+    selectTotalOptionReview,
+    selectTotalPointReview,
+    selectTotalPointOptionReview,
+    selectNewPhotoReview,
+    selectNewPhotoOptionReview,
+    selectNewPhotoPointReview,
+    selectNewPhotoPointOptionReview,
+    selectNewTotalReview,
+    selectNewTotalOptionReview,
+    selectNewTotalPointReview,
+    selectNewTotalPointOptionReview,
 }

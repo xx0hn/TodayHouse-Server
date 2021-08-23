@@ -95,6 +95,8 @@ module.exports = function(app){
     // 28. 주문 생성 API
     app.post('/app/users/:userId/orders', jwtMiddleware, user.postOrder);
 
+    // 29. 리뷰 생성 API
+    app.post('/app/users/:userId/reviews', jwtMiddleware, user.postReview);
 
     // 31. 자동 로그인 API
     app.get('/app/auto-login', jwtMiddleware, user.jwtCheck);
@@ -120,6 +122,8 @@ module.exports = function(app){
     // 39. 사용 가능 쿠폰 조회 API
     app.get('/app/users/:userId/coupons', jwtMiddleware, user.getCoupons);
 
+    // 41. 리뷰 도움 API
+    app.post('/app/users/:userId/helped-reviews', jwtMiddleware, user.postHelp);
 
     //  유저 조회 API (+ 검색)
     app.get('/app/users',user.getUsers); 
