@@ -30,7 +30,8 @@ exports.getPopular = async function(req, res){
     const result=[];
     const getCategoryName = await postProvider.getCategoryName(categoryId);
     const getPrintTotal = await postProvider.getPrintTotal();
-    if(!categoryId) {
+    if(!categoryId) return res.send(response(baseResponse.PRODUCT_CATEGORY_ID_EMPTY));
+    if(categoryId==='0') {
         const getBestProduct = await postProvider.getBestProduct();
         getBest.push(getPrintTotal, getBestProduct);
     }
