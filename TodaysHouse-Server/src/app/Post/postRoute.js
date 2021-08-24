@@ -10,8 +10,11 @@ module.exports = function(app) {
     app.get('/app/posts/popular', post.getPopular);
 
     // 18. 전체 집들이 게시글 조회 API
-    // app.get('/app/posts/housewarms', post.getTotalHouseWarm);
+    app.get('/app/posts/housewarms', post.getTotalHouseWarm);
 
     // 19. 집들이 게시글 조회 API
     app.get('/app/posts/housewarms/:houseWarmId', post.getHouseWarm);
+
+    // 20. 통합 검색 API
+    app.get('/app/posts', post.getSearch);
 }

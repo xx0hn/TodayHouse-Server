@@ -125,11 +125,8 @@ module.exports = function(app){
     // 41. 리뷰 도움 API
     app.post('/app/users/:userId/helped-reviews', jwtMiddleware, user.postHelp);
 
-    //  유저 조회 API (+ 검색)
-    app.get('/app/users',user.getUsers); 
-
-    //  특정 유저 조회 API
-    app.get('/app/users/:userId', user.getUserById);
+    // 42. 2시간마다 푸시 알림 API
+    app.get('/app/push', user.pushAlarms);
 
 
     // TODO: After 로그인 인증 방법 (JWT)

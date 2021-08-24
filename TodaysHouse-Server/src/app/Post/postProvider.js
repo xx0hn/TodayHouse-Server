@@ -145,3 +145,109 @@ exports.getReply = async function(commentId){
     connection.release();
     return getReply;
 }
+
+//전체 검색 스토어
+exports.getSearchStore = async function(keyword, keywords, keywordss, keywordsss, keywordssss){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getSearchStore = await postDao.selectSearchStore(connection, keyword, keywords, keywordss, keywordsss, keywordssss);
+    connection.release();
+    return getSearchStore;
+}
+
+//전체 검색 집들이
+exports.getSearchHouseWarm = async function(keyword, keywords, keywordss, keywordsss, keywordssss){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getSearchHouseWarm = await postDao.selectSearchHouseWarm(connection, keyword, keywords, keywordss, keywordsss, keywordssss);
+    connection.release();
+    return getSearchHouseWarm;
+}
+
+//전체 검색 유저
+exports.getSearchUser = async function(keyword){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getSearchUser = await postDao.selectSearchUser(connection, keyword);
+    connection.release();
+    return getSearchUser;
+}
+
+//검색 스토어
+exports.getSearchProducts = async function(keyword, keywords, keywordss, keywordsss, keywordssss){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getSearchProducts = await postDao.selectSearchProducts(connection, keyword, keywords, keywordss, keywordsss, keywordssss);
+    connection.release();
+    return getSearchProducts;
+}
+
+//검색 집들이
+exports.getSearchHouseWarms = async function(keyword, keywords, keywordss, keywordsss, keywordssss){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getSearchHouseWarms = await postDao.selectSearchHouseWarms(connection, keyword, keywords, keywordss, keywordsss, keywordssss);
+    connection.release();
+    return getSearchHouseWarms;
+}
+
+//검색 유저
+exports.getSearchUsers = async function(keyword){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getSearchUsers = await postDao.selectSearchUsers(connection, keyword);
+    connection.release();
+    return getSearchUsers;
+}
+
+//스토어 수
+exports.getStoreCounts = async function(storeCount){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getStoreCount = await postDao.selectStoreCounts(connection, storeCount);
+    connection.release();
+    return getStoreCount;
+}
+
+
+
+//집들이 수
+exports.getHouseWarmCounts = async function(houseWarmCount){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getHouseWarmCount = await postDao.selectHouseWarmCounts(connection, houseWarmCount);
+    connection.release();
+    return getHouseWarmCount;
+}
+
+//유저 수
+exports.getUserCount = async function(keyword){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getUserCount = await postDao.selectUserCounts(connection, keyword);
+    connection.release();
+    return getUserCount;
+}
+
+//유저 수
+exports.getUserCounts = async function(userCount){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getUserCount = await postDao.selectUserCounts(connection, userCount);
+    connection.release();
+    return getUserCount;
+}
+
+//집들이 신규 순 조회
+exports.getNewHouseWarms = async function(houseWarmParams){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getNewHouseWarms = await postDao.selectNewHouseWarms(connection, houseWarmParams);
+    connection.release();
+    return getNewHouseWarms;
+}
+
+//집들이 인기 순 조회
+exports.getPopularHouseWarms = async function(houseWarmParams){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getPopularHouseWarms = await postDao.selectPopularHouseWarms(connection, houseWarmParams);
+    connection.release();
+    return getPopularHouseWarms;
+}
+
+//집들이 오래된 순 조회
+exports.getOldHouseWarms = async function(houseWarmParams){
+    const connection = await pool.getConnection(async(conn)=>conn);
+    const getOldHouseWarms = await postDao.selectOldHouseWarms(connection, houseWarmParams);
+    connection.release();
+    return getOldHouseWarms;
+}

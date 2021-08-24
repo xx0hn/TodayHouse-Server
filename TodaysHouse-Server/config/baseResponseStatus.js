@@ -107,6 +107,9 @@ module.exports = {
     POINT_TYPE_EMPTY:{ "isSuccess": false, "code": 2067, "message": "필터링 별점을 입력해주세요. " },
     OPTION_EMPTY:{ "isSuccess": false, "code": 2068, "message": "상품 필터링 옵션을 입력해주세요. " },
 
+    SEARCH_TYPE_EMPTY:{ "isSuccess": false, "code": 2069, "message": "검색 타입을 입력해주세요. " },
+    SEARCH_KEYWORD_EMPTY:  { "isSuccess": false, "code": 2070, "message": "검색 키워드를 입력해주세요. "},
+
     // Response error
     SIGNUP_REDUNDANT_EMAIL : { "isSuccess": false, "code": 3001, "message":"중복된 이메일입니다." },
     SIGNUP_REDUNDANT_NICKNAME : { "isSuccess": false, "code": 3002, "message":"중복된 닉네임입니다." },
@@ -144,7 +147,9 @@ module.exports = {
     CONTENTS_LENGTH_ERROR:  { "isSuccess": false, "code": 3025, "message": "리뷰 내용은 최소 20자 이상 작성해주세요. "},
     POINT_TYPE_ERROR:  { "isSuccess": false, "code": 3026, "message": "별점 타입을 정확하게 입력해주세요. (0~5) "},
     PHOTO_TYPE_ERROR:  { "isSuccess": false, "code": 3027, "message": "사진 타입을 정확하게 입력해주세요. (PHOTO, TOTAL) "},
-    REVIEW_SORT_TYPE_ERROR:  { "isSuccess": false, "code": 3028, "message": "리뷰 정렬 우선순위를 정확하게 입력해주세요. (BEST, NEW) "},
+    REVIEW_SORT_TYPE_ERROR: { "isSuccess": false, "code": 3028, "message": "리뷰 정렬 우선순위를 정확하게 입력해주세요. (BEST, NEW) "},
+    SEARCH_TYPE_ERROR: { "isSuccess": false, "code": 3029, "message": "검색 타입을 정확하게 입력해주세요. (TOTAL,STORE,HOUSEWARM, USER) "},
+    HOUSEWARM_SORT_TYPE_ERROR:  { "isSuccess": false, "code": 3030, "message": "정렬 우선순위를 정확하게 입력해주세요. (NEW, POPULAR, OLD) "},
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},
     SERVER_ERROR : { "isSuccess": false, "code": 4001, "message": "서버 에러"},

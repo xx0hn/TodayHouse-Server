@@ -46,8 +46,48 @@ exports.getPopular = async function(req, res){
     return res.send(response(baseResponse.SUCCESS, result));
 }
 
-// 집들이 전체 조회
-
+/**
+ * API No. 18
+ * API Name : 집들이 전체 조회 API
+ * [GET] /app/posts/housewarms
+ */
+exports.getTotalHouseWarm = async function(req, res){
+    var {sortType, buildingTypeId, minWidth, maxWidth, minBudget, maxBudget, familyTypeId, styleId, wallColorId, floorColorId, detailWorkId, areaId, workerId} = req.query;
+    const result =[];
+    if(!sortType) return res.send(response(baseResponse.SORT_TYPE_EMPTY));
+    if(!minWidth) minWidth=0;
+    if(!maxWidth) maxWidth=9999;
+    if(!minBudget) minBudget=0;
+    if(!maxBudget) maxBudget=9999;
+    const buildingTypeIdForSearch = '%' + buildingTypeId + '%';
+    const familyTypeIdForSearch = '%' + familyTypeId + '%';
+    const styleIdForSearch = '%' + styleId + '%';
+    const wallColorIdForSearch = '%' + wallColorId + '%';
+    const floorColorIdForSearch = '%' + floorColorId + '%';
+    const detailWorkIdForSearch = '%' + detailWorkId + '%';
+    const areaIdForSearch = '%' + areaId + '%';
+    const workerIdForSearch = '%' + workerId + '%';
+    const houseWarmParams = [buildingTypeIdForSearch, minWidth, maxWidth, minBudget, maxBudget, familyTypeIdForSearch, styleIdForSearch, wallColorIdForSearch, floorColorIdForSearch, detailWorkIdForSearch, areaIdForSearch, workerIdForSearch];
+    if(sortType==='NEW'){
+        const getNewHouseWarm = await postProvider.getNewHouseWarms(houseWarmParams);
+        const houseWarmCount = getNewHouseWarm.length
+        result.push({HouseWarmCount: houseWarmCount, HouseWarms: getNewHouseWarm});
+        return res.send(response(baseResponse.SUCCESS, result));
+    }
+    else if(sortType==='POPULAR'){
+        const getPopularHouseWarm = await postProvider.getPopularHouseWarms(houseWarmParams);
+        const houseWarmCount = getPopularHouseWarm.length;
+        result.push({HouseWarmCount: houseWarmCount, HouseWarms: getPopularHouseWarm});
+        return res.send(response(baseResponse.SUCCESS, result));
+    }
+    else if(sortType==='OLD'){
+        const getOldHouseWarm = await postProvider.getOldHouseWarms(houseWarmParams);
+        const houseWarmCount = getOldHouseWarm.length;
+        result.push({HouseWarmCount: houseWarmCount, HouseWarms: getOldHouseWarm});
+        return res.send(response(baseResponse.SUCCESS, result));
+    }
+    return res.send(errResponse(baseResponse.HOUSEWARM_SORT_TYPE_ERROR));
+}
 
 /**
  * API No. 19
@@ -88,4 +128,52 @@ exports.getHouseWarm = async function (req, res){
                 , IncludeTotalProduct: getIncludeTotalProduct, Count: getTotalCount, Comments: comments
                 , SimilarHouseWarm: getSimilarHouseWarm});
     return res.send(response(baseResponse.SUCCESS, result));
+}
+
+/**
+ * API No. 20
+ * API Name : 통합 검색 API
+ * [GET] /app/posts
+ */
+exports.getSearch = async function (req, res){
+    const {type, keyword} = req.query;
+    if(!type) return res.send(response(baseResponse.SEARCH_TYPE_EMPTY));
+    if(!keyword) return res.send(response(baseResponse.SEARCH_KEYWORD_EMPTY));
+    const keywords = keyword;
+    const keywordss = keyword;
+    const keywordsss = keyword;
+    const keywordssss = keyword;
+    const result =[];
+    const getSearchStore = await postProvider.getSearchStore(keyword, keywords, keywordss, keywordsss, keywordssss);
+    let storeCount = getSearchStore.length;
+    const getStoreCounts = await postProvider.getStoreCounts(storeCount);
+    const getSearchHouseWarm = await postProvider.getSearchHouseWarm(keyword, keywords, keywordss, keywordsss, keywordssss);
+    let houseWarmCount = getSearchHouseWarm.length;
+    const getHouseWarmCounts = await postProvider.getHouseWarmCounts(houseWarmCount);
+    const getSearchUser = await postProvider.getSearchUser(keyword);
+    let userCount = getSearchUser.length;
+    const getUserCounts = await postProvider.getUserCounts(userCount);
+    if(type==='TOTAL'){
+        result.push({StoreCount: getStoreCounts, Stores: getSearchStore, HouseWarmCount: getHouseWarmCounts, HouseWarms: getSearchHouseWarm, UserCount: getUserCounts, Users: getSearchUser});
+        return res.send(response(baseResponse.SUCCESS, result));
+    }
+    else if(type==='STORE'){
+        const getSearchStore = await postProvider.getSearchProducts(keyword, keywords, keywordss, keywordsss, keywordssss);
+        const count = await postProvider.getStoreCounts(getSearchStore.length);
+        result.push({StoreCount: count, Stores: getSearchStore});
+        return res.send(response(baseResponse.SUCCESS, result));
+    }
+    else if(type==='HOUSEWARM'){
+        const getSearchHouseWarm = await postProvider.getSearchHouseWarms(keyword, keywords, keywordss, keywordsss, keywordssss);
+        const count = await postProvider.getHouseWarmCounts(getSearchHouseWarm.length);
+        result.push({HouseWarmCount: count, HouseWarms: getSearchHouseWarm});
+        return res.send(response(baseResponse.SUCCESS, result));
+    }
+    else if(type==='USER') {
+        const getSearchUser = await postProvider.getSearchUsers(keyword);
+        const count = await postProvider.getUserCounts(getSearchUser.length);
+        result.push({UserCount: count, Users: getSearchUser});
+        return res.send(response(baseResponse.SUCCESS, result));
+    }
+    return res.send(errResponse(baseResponse.SEARCH_TYPE_ERROR));
 }

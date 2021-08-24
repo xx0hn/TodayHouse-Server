@@ -296,11 +296,11 @@ where a.id = ?;`;
 //댓글 조회
 async function selectComment(connection, houseWarmId){
     const selectCommentQuery=`
-        select b.id as id 
+        select b.id as id
             , c.profileImageUrl                                               as UserProfileImage
              , c.nickName                                                      as UserNickName
              , b.contents                                                      as Comments
-             , concat(timestampdiff(day, current_timestamp, b.createdAt), '일') as CommentCreatedAt
+             , concat(timestampdiff(day, b.createdAt, current_timestamp), '일') as CommentCreatedAt
         from HouseWarm a
                  left join (select id
                                  , houseWarmId
@@ -315,11 +315,14 @@ async function selectComment(connection, houseWarmId){
                                  , nickName
                             from User) as c
                            on b.userId = c.id
-        where a.id = 1
+        where a.id = ?
           and b.status = 'ACTIVE';`;
     const [commentRows] = await connection.query(selectCommentQuery, houseWarmId);
     return commentRows;
 }
+
+
+
 
 //집들이 스타일 아이디 조회
 async function selectStyle(connection, houseWarmId){
@@ -413,7 +416,7 @@ async function selectReply(connection, commentId){
     select b.profileImageUrl as UserProfileImage
         , b.nickName as UserNickName
         , a.contents as ReplyComments
-        , concat(timestampdiff(day, current_timestamp, a.createdAt), '일') as ReplyCreatedAt
+        , concat(timestampdiff(day, a.createdAt, current_timestamp), '일') as ReplyCreatedAt
 from CommentReply a
 left join ( select id
                         , profileImageUrl
@@ -424,6 +427,372 @@ where a.commentId = ? and a.status = 'ACTIVE';`;
     const [replyRows] = await connection.query(selectReplyQuery, commentId);
     return replyRows;
 }
+
+//전체 검색 스토어
+async function selectSearchStore(connection, keyword, keywords, keywordss, keywordsss, keywordssss){
+    const selectSearchStoreQuery=`
+        select a.id                                                              as ProductId
+             , d.imageUrl                                                        as ProductImage
+             , b.name                                                            as BrandName
+             , a.name                                                            as ProductName
+             , case when a.discount is not null then concat(a.discount, '%') end as DiscountPercent
+             , format(a.saleCost, 0)                                             as Cost
+             , case when starGrade is null then 0 else starGrade end             as StarGrade
+             , case when reviewCount is null then 0 else reviewCount end         as ReviewCount
+             , case when e.delCost = 0 then '무료배송' end                           as DeliveryCost
+             , case when a.discount is not null then '특가' end                    as SpecialPrice
+        from Product a
+                 left join (select id
+                                 , name
+                            from Brand) as b
+                           on a.brandId = b.id
+                 left join (select id
+                                 , productId
+                                 , starPoint
+                                 , round(sum(starPoint) / count(productId), 1) as 'starGrade'
+                        , count(productId) as 'reviewCount'
+                        , status
+                            from ProductReview
+                            where status = 'ACTIVE'
+                            group by productId) as c
+                           on a.id = c.productId
+                 left join (select id
+                                 , productId
+                                 , imageUrl
+                            from ProductImageUrl) as d
+                           on a.id = d.id
+                 left join (select id
+                                 , delCost
+                            from DeliveryInfo) as e
+                           on a.delInfoId = e.id
+                 left join (select id
+                                 , productId
+                                 , keywordId
+                            from KeywordMapping) as g
+                           on a.id = g.productId
+                 left join (select id
+                                 , name
+                            from Keyword) as h
+                           on g.keywordId = h.id
+                 left join (select id
+                                 , name
+                            from LargeCategory) as i
+                           on a.largeCategoryId = i.id
+                 left join (select id
+                                 , name
+                            from MiddleCategory) as j
+                           on a.middleCategoryId = j.id
+                 left join (select id
+                                 , name
+                            from SmallCategory) as k
+                           on a.smallCategoryId = k.id
+        where a.status = 'ACTIVE'
+          and (h.name regexp ? or i.name regexp ? or j.name regexp ? or k.name regexp ? or a.name regexp ?)
+        group by a.id
+        order by a.viewCount desc limit 8;`;
+    const [searchRows] = await connection.query(selectSearchStoreQuery, [keyword, keywords, keywordss, keywordsss, keywordssss]);
+    return searchRows;
+}
+
+//전체 검색 집들이
+async function selectSearchHouseWarm(connection, keyword, keywords, keywordss, keywordsss, keywordssss){
+    const selectSearchHouseWarmQuery=`
+    select a.id as HouseWarmId
+        , a.imageUrl as Image
+        , a.title as HouseWarmTitle
+        , b.nickName as UserNickName
+        , case when houseWarmCount is null then 0 else houseWarmCount end as ScrapCount
+        , a.viewCount as ViewCount
+from HouseWarm a
+left join ( select id
+                    , nickName
+                from User) as b
+                on a.userId = b.id
+left join ( select id
+                    , houseWarmId
+                    , count(houseWarmId) as 'houseWarmCount'
+                    , status
+                from Scrap
+                where status = 'ACTIVE'
+                group by houseWarmId) as c
+                on a.id = c.houseWarmId
+left join ( select id
+                , name
+                from BuildingType) as d
+                on a.buildingTypeId = d.id
+left join ( select id
+                , name
+                from FamilyType) as e
+                on a.familyTypeId = e.id
+left join ( select id
+                , name
+            from Style) as f
+            on a.styleId = f.id
+left join (select id
+                , name
+            from Area) as g
+            on a.areaId = g.id
+where d.name regexp ? or e.name regexp ? or f.name regexp ? or g.name regexp ? or a.title regexp ?
+order by a.viewCount desc limit 6;`;
+    const [searchRows] = await connection.query(selectSearchHouseWarmQuery, [keyword, keywords, keywordss, keywordsss, keywordssss]);
+    return searchRows;
+}
+
+//전체 검색 유저
+async function selectSearchUser(connection, keyword){
+    const selectSearchUserQuery=`
+    select id as UserId
+        , nickName as UserNickName
+        , profileImageUrl as UserProfileImage
+from User
+where nickName regexp ?
+order by nickName asc limit 10 ;`;
+    const [searchRows] = await connection.query(selectSearchUserQuery, keyword);
+    return searchRows;
+}
+
+//검색 스토어
+async function selectSearchProducts(connection, keyword, keywords, keywordss, keywordsss, keywordssss){
+    const selectSearchProductsQuery=`
+            select a.id                                                              as ProductId
+             , d.imageUrl                                                        as ProductImage
+             , b.name                                                            as BrandName
+             , a.name                                                            as ProductName
+             , case when a.discount is not null then concat(a.discount, '%') end as DiscountPercent
+             , format(a.saleCost, 0)                                             as Cost
+             , case when starGrade is null then 0 else starGrade end             as StarGrade
+             , case when reviewCount is null then 0 else reviewCount end         as ReviewCount
+             , case when e.delCost = 0 then '무료배송' end                           as DeliveryCost
+             , case when a.discount is not null then '특가' end                    as SpecialPrice
+        from Product a
+                 left join (select id
+                                 , name
+                            from Brand) as b
+                           on a.brandId = b.id
+                 left join (select id
+                                 , productId
+                                 , starPoint
+                                 , round(sum(starPoint) / count(productId), 1) as 'starGrade'
+                        , count(productId) as 'reviewCount'
+                        , status
+                            from ProductReview
+                            where status = 'ACTIVE'
+                            group by productId) as c
+                           on a.id = c.productId
+                 left join (select id
+                                 , productId
+                                 , imageUrl
+                            from ProductImageUrl) as d
+                           on a.id = d.id
+                 left join (select id
+                                 , delCost
+                            from DeliveryInfo) as e
+                           on a.delInfoId = e.id
+                 left join (select id
+                                 , productId
+                                 , keywordId
+                            from KeywordMapping) as g
+                           on a.id = g.productId
+                 left join (select id
+                                 , name
+                            from Keyword) as h
+                           on g.keywordId = h.id
+                 left join (select id
+                                 , name
+                            from LargeCategory) as i
+                           on a.largeCategoryId = i.id
+                 left join (select id
+                                 , name
+                            from MiddleCategory) as j
+                           on a.middleCategoryId = j.id
+                 left join (select id
+                                 , name
+                            from SmallCategory) as k
+                           on a.smallCategoryId = k.id
+        where a.status = 'ACTIVE'
+          and (h.name regexp ? or i.name regexp ? or j.name regexp ? or k.name regexp ? or a.name regexp ?)
+        group by a.id
+        order by a.viewCount desc;`
+    const [searchRows] = await connection.query(selectSearchProductsQuery, [keyword, keywords, keywordss, keywordsss, keywordssss]);
+    return searchRows;
+}
+
+//검색 집들이
+async function selectSearchHouseWarms(connection, keyword, keywords, keywordss, keywordsss, keywordssss){
+    const selectSearchHouseWarmsQuery=`
+        select a.id as HouseWarmId
+        , a.imageUrl as Image
+        , a.title as HouseWarmTitle
+        , b.nickName as UserNickName
+        , case when houseWarmCount is null then 0 else houseWarmCount end as ScrapCount
+        , a.viewCount as ViewCount
+from HouseWarm a
+left join ( select id
+                    , nickName
+                from User) as b
+                on a.userId = b.id
+left join ( select id
+                    , houseWarmId
+                    , count(houseWarmId) as 'houseWarmCount'
+                    , status
+                from Scrap
+                where status = 'ACTIVE'
+                group by houseWarmId) as c
+                on a.id = c.houseWarmId
+left join ( select id
+                , name
+                from BuildingType) as d
+                on a.buildingTypeId = d.id
+left join ( select id
+                , name
+                from FamilyType) as e
+                on a.familyTypeId = e.id
+left join ( select id
+                , name
+            from Style) as f
+            on a.styleId = f.id
+left join (select id
+                , name
+            from Area) as g
+            on a.areaId = g.id
+where d.name regexp ? or e.name regexp ? or f.name regexp ? or g.name regexp ? or a.title regexp ?
+order by a.viewCount desc;`;
+    const [searchRows] = await connection.query(selectSearchHouseWarmsQuery, [keyword, keywords, keywordss, keywordsss, keywordssss]);
+    return searchRows;
+}
+
+//검색 유저
+async function selectSearchUsers(connection, keyword, keywords, keywordss, keywordsss, keywordssss){
+    const selectSearchUsersQuery=`
+        select id as UserId
+        , nickName as UserNickName
+        , profileImageUrl as UserProfileImage
+from User
+where nickName regexp ?
+order by nickName asc;`;
+    const [searchRows] = await connection.query(selectSearchUsersQuery, [keyword, keywords, keywordss, keywordsss, keywordssss]);
+    return searchRows;
+}
+
+
+//스토어 수
+async function selectStoreCounts(connection,storeCount){
+    const selectStoreCountQuery=`
+            select ? as StoreCount;`;
+    const [countRows] = await connection.query(selectStoreCountQuery, storeCount);
+    return countRows;
+}
+
+
+//집들이 수
+async function selectHouseWarmCounts(connection, houseWarmCount){
+    const selectHouseWarmCountQuery=`
+            select ? as HouseWarmCount`;
+    const [countRows] = await connection.query(selectHouseWarmCountQuery, houseWarmCount);
+    return countRows;
+}
+
+
+//유저 수
+async function selectUserCounts(connection, userCount){
+    const selectUserCountQuery=`
+            select ? as UserCount`;
+    const [countRows] = await connection.query(selectUserCountQuery, userCount);
+    return countRows;
+}
+
+//집들이 최신 순 조회
+async function selectNewHouseWarms(connection, houseWarmParams){
+    const selectNewHouseWarmsQuery=`
+    select a.id as HouseWarmId
+        , a.imageUrl as Image
+        , a.title as HouseWarmTitle
+        , b.profileImageUrl as UserProfileImage
+        , b.nickName as UserNickName
+        , case when scrapCount is null then 0 else scrapCount end as ScrapCount
+        , a.viewCount as ViewCount
+from HouseWarm a
+left join ( select id
+                    , nickName
+                    , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                        , houseWarmId
+                        , count(houseWarmId) as 'scrapCount'
+                        , status
+                from Scrap
+                where status = 'ACTIVE'
+                group by houseWarmId) as c
+                on a.id = c.houseWarmId
+   where a.buildingTypeId like ? and (a.width between ? and ?) and (a.budget between ? and ?)
+  and a.familyTypeId like ? and a.styleId like ? and a.wallColorId like ? and a.floorColorId like ? and a.detailWorkId like ? and a.areaId like ? and a.workerId like ? 
+order by a.createdAt desc;`;
+    const [houseWarmRows] = await connection.query(selectNewHouseWarmsQuery, houseWarmParams);
+    return houseWarmRows;
+}
+
+//집들이 인기순 조회
+async function selectPopularHouseWarms(connection, houseWarmParams){
+    const selectPopularHouseWarmsQuery=`
+        select a.id as HouseWarmId
+        , a.imageUrl as Image
+        , a.title as HouseWarmTitle
+        , b.profileImageUrl as UserProfileImage
+        , b.nickName as UserNickName
+        , case when scrapCount is null then 0 else scrapCount end as ScrapCount
+        , a.viewCount as ViewCount
+from HouseWarm a
+left join ( select id
+                    , nickName
+                    , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                        , houseWarmId
+                        , count(houseWarmId) as 'scrapCount'
+                        , status
+                from Scrap
+                where status = 'ACTIVE'
+                group by houseWarmId) as c
+                on a.id = c.houseWarmId
+where a.buildingTypeId like ? and (a.width between ? and ?) and (a.budget between ? and ?)
+  and a.familyTypeId like ? and a.styleId like ? and a.wallColorId like ? and a.floorColorId like ? and a.detailWorkId like ? and a.areaId like ? and a.workerId like ? 
+order by a.viewCount desc;`;
+    const [houseWarmsRows] = await connection.query(selectPopularHouseWarmsQuery, houseWarmParams);
+    return houseWarmsRows;
+}
+
+//집들이 오랜된 순 조회
+async function selectOldHouseWarms(connection, houseWarmParams){
+    const selectOldHouseWarmsQuery=`
+        select a.id as HouseWarmId
+        , a.imageUrl as Image
+        , a.title as HouseWarmTitle
+        , b.profileImageUrl as UserProfileImage
+        , b.nickName as UserNickName
+        , case when scrapCount is null then 0 else scrapCount end as ScrapCount
+        , a.viewCount as ViewCount
+from HouseWarm a
+left join ( select id
+                    , nickName
+                    , profileImageUrl
+                from User ) as b
+                on a.userId = b.id
+left join ( select id
+                        , houseWarmId
+                        , count(houseWarmId) as 'scrapCount'
+                        , status
+                from Scrap
+                where status = 'ACTIVE'
+                group by houseWarmId) as c
+                on a.id = c.houseWarmId
+where a.buildingTypeId like ? and (a.width between ? and ?)  and (a.budget between ? and ?) and a.familyTypeId like ? and a.styleId like ? and a.wallColorId like ? and a.floorColorId like ? and detailWorkId like ? and areaId like ? and workerId like ? 
+order by a.createdAt asc;`;
+    const [houseWarmRows] = await connection.query(selectOldHouseWarmsQuery, houseWarmParams);
+    return houseWarmRows;
+}
+
 
 module.exports = {
     selectTodayStory,
@@ -445,4 +814,16 @@ module.exports = {
     selectHouseWarmContentsProduct,
     selectReply,
     houseWarmContent,
+    selectSearchHouseWarm,
+    selectSearchStore,
+    selectSearchUser,
+    selectSearchProducts,
+    selectSearchHouseWarms,
+    selectSearchUsers,
+    selectStoreCounts,
+    selectHouseWarmCounts,
+    selectUserCounts,
+    selectNewHouseWarms,
+    selectPopularHouseWarms,
+    selectOldHouseWarms,
 }
