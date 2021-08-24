@@ -102,33 +102,20 @@ exports.getHouseWarm = async function (req, res){
     const userImageNickname = await postProvider.getUserImageNickname(houseWarmId); //작성자 프로필사진, 닉네임
     const getIncludeTotalProduct = await postProvider.getIncludeTotalProduct(houseWarmId); //포함된 상품 전체 조회
     const patchViewCount = await postService.patchViewCount(houseWarmId);
-    const getTotalCount = await postProvider.getTotalCount(houseWarmId); //좋아요, 스크랩, 댓글, 조회수 출력
-    const getComment = await postProvider.getComment(houseWarmId); //댓글
-    const getHouseWarmStyleId = await postProvider.getHouseWarmStyleId(houseWarmId);
-    const getSimilarHouseWarm = await postProvider.getSimilarHouseWarm(getHouseWarmStyleId[0].id); //비슷한 집들이 조회
     const houseWarmContents = [];
-    const houseWarmTitle =[];
-    const comments = [];
     const result = [];
-    // for(let i=0; i<getContentsTitle.length; i++) {
-    //     const getHouseWarmContents = await postProvider.getHouseWarmContents(houseWarmId, getContentsTitle[i].title);
-    //     houseWarmTitle.push({Title: getContentsTitle[i], Contents: getHouseWarmContents});
-    // }
     const houseWarmContent = await postProvider.houseWarmContent(houseWarmId);
     for (let i=0; i<houseWarmContent.length; i++) {
         const getHouseWarmContentsProduct = await postProvider.getHouseWarmContentsProduct(houseWarmContent[i].id);
         houseWarmContents.push(houseWarmContent[i], getHouseWarmContentsProduct);
     }
 
-    for(let i=0; i<getComment.length; i++){
-        const getReply = await postProvider.getReply(getComment[i].id);
-        comments.push(getComment[i], getReply);
-    }
+
     result.push({HouseWarmInfo: getHouseWarm, HouseWarmContents: houseWarmContents, WrittenBy: userImageNickname
-                , IncludeTotalProduct: getIncludeTotalProduct, Count: getTotalCount, Comments: comments
-                , SimilarHouseWarm: getSimilarHouseWarm});
+                , IncludeTotalProduct: getIncludeTotalProduct});
     return res.send(response(baseResponse.SUCCESS, result));
 }
+
 
 /**
  * API No. 20
@@ -176,4 +163,46 @@ exports.getSearch = async function (req, res){
         return res.send(response(baseResponse.SUCCESS, result));
     }
     return res.send(errResponse(baseResponse.SEARCH_TYPE_ERROR));
+}
+
+/**
+ * API No. 42
+ * API Name : 집들이 댓글 API
+ * [GET] /app/housewarms/:houseWarmId/comments
+ */
+exports.getComment = async function(req, res){
+    const houseWarmId = req.params.houseWarmId;
+    if(!houseWarmId) return res.send(response(baseResponse.HOUSE_WARM_ID_EMPTY));
+    const comments = [];
+    const getComment = await postProvider.getComment(houseWarmId); //댓글
+    for(let i=0; i<getComment.length; i++){
+        const getReply = await postProvider.getReply(getComment[i].id);
+        comments.push(getComment[i], getReply);
+    }
+    return res.send(response(baseResponse.SUCCESS, comments));
+}
+
+/**
+ * API No. 43
+ * API Name : 집들이 좋아요, 스크랩, 댓글, 조회수 조회 API
+ * [GET] /app/housewarms/:houseWarmId/status
+ */
+exports.getStatus = async function(req, res){
+    const houseWarmId = req.params.houseWarmId;
+    if(!houseWarmId) return res.send(response(baseResponse.HOUSE_WARM_ID_EMPTY));
+    const getTotalCount = await postProvider.getTotalCount(houseWarmId); //좋아요, 스크랩, 댓글, 조회수 출력
+    return res.send(response(baseResponse.SUCCESS, getTotalCount));
+}
+
+/**
+ * API No. 44
+ * API Name : 비슷한 집들이 조회 API
+ * [GET] /app/housewarms/:houseWarmId/similar
+ */
+exports.getSimilar = async function(req, res){
+    const houseWarmId = req.params.houseWarmId;
+    if(!houseWarmId) return res.send(response(baseResponse.HOUSE_WARM_ID_EMPTY));
+    const getHouseWarmStyleId = await postProvider.getHouseWarmStyleId(houseWarmId);
+    const getSimilarHouseWarm = await postProvider.getSimilarHouseWarm(getHouseWarmStyleId[0].id); //비슷한 집들이 조회
+    return res.send(response(baseResponse.SUCCESS, getSimilarHouseWarm));
 }

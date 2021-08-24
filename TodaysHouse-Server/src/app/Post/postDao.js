@@ -255,7 +255,8 @@ async function selectTotalProduct (connection, houseWarmId){
 //좋아요, 댓글, 스크랩, 조회수 조회
 async function selectTotalCount (connection, houseWarmId){
     const selectTotalCountQuery=`
-    select case when countLike is null then 0 else countLike end as LikeCount
+    select a.id as HouseWarmId
+        , case when countLike is null then 0 else countLike end as LikeCount
         , case when countScrap is null then 0 else countScrap end as ScrapCount
         , case when (countComment+countReply) is null then 0 else (countComment+countReply) end as CommentCount
         , a.viewCount as ViewCount
@@ -337,7 +338,8 @@ async function selectStyle(connection, houseWarmId){
 //비슷한 집들이 조회
 async function selectSimilarHouseWarm(connection, styleId){
     const selectSimilarHouseWarmQuery=`
-    select a.imageUrl as Image
+    select a.id as HouseWarmId
+        , a.imageUrl as Image
         , a.title as Title
         , b.profileImageUrl as UserProfileImage
         , b.nickName as UserNickName
@@ -413,7 +415,8 @@ where a.id = ?;`;
 //대댓글 조회
 async function selectReply(connection, commentId){
     const selectReplyQuery=`
-    select b.profileImageUrl as UserProfileImage
+    select a.id as CommentReplyId
+        , b.profileImageUrl as UserProfileImage
         , b.nickName as UserNickName
         , a.contents as ReplyComments
         , concat(timestampdiff(day, a.createdAt, current_timestamp), '일') as ReplyCreatedAt

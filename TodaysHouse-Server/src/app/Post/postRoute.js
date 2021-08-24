@@ -17,4 +17,13 @@ module.exports = function(app) {
 
     // 20. 통합 검색 API
     app.get('/app/posts', post.getSearch);
+
+    // 42. 집들이 댓글 조회 API
+    app.get('/app/housewarms/:houseWarmId/comments', post.getComment);
+
+    // 43. 집들이 좋아요, 스크랩, 댓글, 조회수 조회 API
+    app.get('/app/housewarms/:houseWarmId/status', post.getStatus);
+
+    // 44. 비슷한 집들이 조회 API
+    app.get('/app/housewarms/:houseWarmId/similar', post.getSimilar);
 }
