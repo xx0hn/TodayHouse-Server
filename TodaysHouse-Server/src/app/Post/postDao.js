@@ -255,7 +255,7 @@ async function selectTotalProduct (connection, houseWarmId){
 //좋아요, 댓글, 스크랩, 조회수 조회
 async function selectTotalCount (connection, houseWarmId){
     const selectTotalCountQuery=`
-    select a.id as HouseWarmId
+    select distinct a.id as HouseWarmId
         , case when countLike is null then 0 else countLike end as LikeCount
         , case when countScrap is null then 0 else countScrap end as ScrapCount
         , case when (countComment+countReply) is null then 0 else (countComment+countReply) end as CommentCount

@@ -107,7 +107,8 @@ exports.getHouseWarm = async function (req, res){
     const houseWarmContent = await postProvider.houseWarmContent(houseWarmId);
     for (let i=0; i<houseWarmContent.length; i++) {
         const getHouseWarmContentsProduct = await postProvider.getHouseWarmContentsProduct(houseWarmContent[i].id);
-        houseWarmContents.push(houseWarmContent[i], getHouseWarmContentsProduct);
+        const newdata = [].concat(houseWarmContent[i], getHouseWarmContentsProduct);
+        houseWarmContents.push(newdata);
     }
 
 
