@@ -102,17 +102,19 @@ exports.getHouseWarm = async function (req, res){
     const userImageNickname = await postProvider.getUserImageNickname(houseWarmId); //작성자 프로필사진, 닉네임
     const getIncludeTotalProduct = await postProvider.getIncludeTotalProduct(houseWarmId); //포함된 상품 전체 조회
     const patchViewCount = await postService.patchViewCount(houseWarmId);
-    const houseWarmContents = [];
+    // const houseWarmContents = [];
+    var houseWarm =[];
     const result = [];
     const houseWarmContent = await postProvider.houseWarmContent(houseWarmId);
     for (let i=0; i<houseWarmContent.length; i++) {
         const getHouseWarmContentsProduct = await postProvider.getHouseWarmContentsProduct(houseWarmContent[i].id);
         const newdata = [].concat(houseWarmContent[i], getHouseWarmContentsProduct);
-        houseWarmContents.push(newdata);
+        houseWarm = houseWarm.concat(newdata);
+        // houseWarmContents.push(newdata);
     }
 
-
-    result.push({HouseWarmInfo: getHouseWarm, HouseWarmContents: houseWarmContents, WrittenBy: userImageNickname
+    // const results=getHouseWarm.concat(houseWarm, userImageNickname, getIncludeTotalProduct);
+    result.push({HouseWarmInfo: getHouseWarm, HouseWarmContents: houseWarm, WrittenBy: userImageNickname
                 , IncludeTotalProduct: getIncludeTotalProduct});
     return res.send(response(baseResponse.SUCCESS, result));
 }
