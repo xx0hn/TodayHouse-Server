@@ -1258,6 +1258,7 @@ where a.id = ?;`;
 async function selectStylingShot(connection, productId){
     const selectStylingShotQuery=`
     select c.id as HouseWarmContentsId
+         , a.id as ProductId
         , c.imageUrl as Image
         , e.nickName as UserNickName
         , e.profileImageUrl as ProfileImage
@@ -1300,7 +1301,8 @@ where productId = ?;`;
 //리뷰 정리
 async function selectReviewTotal(connection, productId){
     const selectReviewTotalQuery=`
-    select 5count
+    select a.id as ProductId
+        , 5count
         , 4count
         , 3count
         , 2count
@@ -1331,7 +1333,8 @@ where a.id = ? and b.status = 'ACTIVE';`;
 //상품 리뷰 사진만 조회
 async function selectReviewPhoto(connection, productId){
     const selectReviewPhotoQuery=`
-    select id, imageUrl
+    select id as ReviewId  
+        , imageUrl as Image
     from ProductReview
     where productId = ? and status = 'ACTIVE'
     order by createdAt desc;`;
@@ -1374,7 +1377,8 @@ async function selectProductReview(connection, productId){
 //상품 문의수 조회
 async function selectProductInquiryCount(connection, productId){
     const selectProductInquiryCountQuery=`
-    select case when count(productId) is null then 0 else count(productId) end as InquiryCount
+    select productId as ProductId
+           , case when count(productId) is null then 0 else count(productId) end as InquiryCount
     from Inquiry
     where productId = ? and status ='ACTIVE'
     group by productId;`;

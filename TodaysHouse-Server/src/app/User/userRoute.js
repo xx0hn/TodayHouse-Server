@@ -70,7 +70,6 @@ module.exports = function(app){
     // 11. 좋아요 API
     app.post('/app/users/:userId/likes', jwtMiddleware, user.postLike);
 
-
     // 12. 좋아요 조회 API
     app.get('/app/users/:userId/likes', jwtMiddleware, user.getLike);
 
@@ -86,8 +85,8 @@ module.exports = function(app){
     // 16. 댓글 수정 API
     app.patch('/app/users/:userId/comments', jwtMiddleware, user.patchComment);
 
-    // 21. 스토어 홈 조회 API
-    app.get('/app/users/:userId/store-home', jwtMiddleware, user.getStoreHome);
+    // 21. 스토어 홈 카테고리 조회 API
+    app.get('/app/users/:userId/store-categories', jwtMiddleware, user.getStoreHome);
 
     // 25. 문의 생성 API
     app.post('/app/users/:userId/inquiry', jwtMiddleware, user.postInquiry);
@@ -110,7 +109,7 @@ module.exports = function(app){
     // 34. 확인 비밀번호 체크 API
     app.get('/app/passwords', user.passwordCheck);
 
-    // 35. 나의 쇼핑 조회 API
+    // 35. 나의 쇼핑 정보 조회 API
     app.get('/app/users/:userId/myshopping', jwtMiddleware, user.getMyShopping);
 
     // 36. 주문/배송 조회 API
@@ -128,6 +127,41 @@ module.exports = function(app){
     // 42. 2시간마다 푸시 알림 API
     app.get('/app/push', user.pushAlarms);
 
+    // 45. 스토어 홈 최근 본 상품 조회 API
+    app.get('/app/users/:userId/recent-products', jwtMiddleware, user.getRecentProducts);
+
+    // 46. 스토어 홈 최근 본 상품과 비슷한 상품 조회 API
+    app.get('/app/users/:userId/recent-similar', jwtMiddleware, user.getRecentSimilar);
+
+    // 47. 스토어 홈 인기 키워드 조회 API
+    app.get('/app/users/:userId/popular-keywords', jwtMiddleware, user.getPopularKeywords);
+
+    // 48. 스토어 홈 인기 상품 조회 API
+    app.get('/app/users/:userId/popular-products', jwtMiddleware, user.getPopularProducts);
+
+    // 53. 나의 쇼핑 주문 현황 조회 API
+    app.get('/app/users/:userId/current-orders', jwtMiddleware, user.getCurrentOrders);
+
+    // 54. 나의 쇼핑 스크랩북, 문의, 리뷰 수 조회 API
+    app.get('/app/users/:userId/shopping-status', jwtMiddleware, user.getShoppingStatus);
+
+    // 55. 마이페이지 나의 쇼핑 조회 API
+    app.get('/app/users/:userId/mypage-shopping', jwtMiddleware, user.getMyPageShopping);
+
+    // 56. 마이페이지 스크랩 조회 API
+    app.get('/app/users/:userId/mypage-scrap', jwtMiddleware, user.getMyPageScrap);
+
+    // 57. 마이페이지 집들이 조회 API
+    app.get('/app/users/:userId/mypage-housewarm', jwtMiddleware, user.getMyPageHouseWarm);
+
+    // 58. 마이페이지 리뷰수 조회 API
+    app.get('/app/users/:userId/mypage-reviewcount', jwtMiddleware, user.getMyPageReviewCount);
+
+    // 59. 다른 유저 페이지 집들이 조회 API
+    app.get('/app/users/:userId/otherpage-housewarm', jwtMiddleware, user.getOtherHouseWarm);
+
+    // 60. 다른 유저 페이지 스크랩 조회 API
+    app.get('/app/users/:userId/otherpage-scrap', jwtMiddleware, user.getOtherScrap);
 
     // TODO: After 로그인 인증 방법 (JWT)
 

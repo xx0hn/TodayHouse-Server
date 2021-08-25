@@ -29,4 +29,16 @@ module.exports = function(app) {
 
     // 40. 배송 요청사항 조회 API
     app.get('/app/requests', store.getRequests);
+
+    // 49. 상품 스타일링샷 조회 API
+    app.get('/app/products/styling-shot', store.getStylingShot);
+
+    // 50. 스토어 특정 상품 리뷰 조회 API
+    app.get('/app/products/reviews', store.getReview);
+
+    // 51. 스토어 특정 상품 문의 갯수 조회 API
+    app.get('/app/products/inquiries', store.getInquiryCount);
+
+    // 52. 스토어 특정 상품과 비슷한 상품 조회 API
+    app.get('/app/products/similars', store.getSimilar);
 }

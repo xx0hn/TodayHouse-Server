@@ -91,10 +91,8 @@ async function selectUserMyPages(connection, userId){
         , a.profileImageUrl as ProfileImage
         , follower as Follower
         , following as Following
-        , case when couponCount is null then 0 else couponCount end as Coupon
         , case when countScrap is null then 0 else countScrap end as ScrapBook
         , case when countLike is null then 0 else countLike end as Likes
-        , a.point as Point 
 from User a
 left join ( select id
                     , fromUserId
@@ -127,15 +125,11 @@ left join ( select id
                 on a.id = e.userId
 left join ( select id
                     , userId
-                from Picture ) as f
-                on a.id = f.userId
-left join ( select id
-                    , userId
                     , count(userId) as couponCount
                 from Coupon
                 group by userId) as g
                 on a.id = g.userId
-where a.id = 1
+where a.id = ?
 group by a.id;`;
   const [myPageRows] = await connection.query(selectUserMypageQuery, userId);
   return myPageRows;
@@ -202,8 +196,9 @@ order by createdAt desc limit 1;`;
 //마이페이지 스크랩북 조회
 async function selectScrapBook (connection, userId){
   const selectScrapBookQuery=`
-  select case when a.houseWarmId is not null or a.proHouseWarmId is not null then '집들이'  when a.pictureId is not null then '사진' when a.knowHowId is not null then '노하우'when a.productId is not null then '상품' end as Type
-        , case when a.houseWarmId is not null then b.imageUrl when a.proHouseWarmId is not null then e.imageUrl when a.pictureId is not null then d.imageUrl when a.knowHowId is not null then f.imageUrl when a.productId is not null then h.imageUrl end as Image
+  select case when a.houseWarmId is not null then a.houseWarmId when a.productId is not null then a.productId end as Id
+         , case when a.houseWarmId is not null then '집들이' when a.productId is not null then '상품' end as Type
+        , case when a.houseWarmId is not null then b.imageUrl when a.productId is not null then h.imageUrl end as Image
 from Scrap a
 left join ( select id
                 , imageUrl
@@ -211,25 +206,10 @@ left join ( select id
                 group by id ) as b
                 on a.houseWarmId = b.id
 left join ( select id
-                from Picture 
-                group by id ) as c
-                on a.pictureId = c.id
-left join ( select id
-                    , pictureId
-                    , imageUrl
-                from PictureContents 
-                group by pictureId) as d
-                on c.id = d.pictureId
-left join ( select id
                     , imageUrl
                 from ProHouseWarming 
                 group by id ) as e
                 on a.proHouseWarmId = e.id
-left join ( select id
-                    , imageUrl
-                from KnowHow 
-                group by id ) as f
-                on a.knowHowId = f.id
 left join ( select id
                 from Product ) as g
                 on a.productId = g.id
@@ -237,7 +217,9 @@ left join ( select id
                     , productId
                     , imageUrl
                 from ProductImageUrl
-                order by createdAt desc limit 1) as h
+            group by productId
+                order by createdAt
+                ) as h
                 on g.id = h.productId
 where userId = ? and a.id is not null and a.status = 'ACTIVE'
 order by createdAt desc limit 9;`;
@@ -248,37 +230,24 @@ order by createdAt desc limit 9;`;
 //마이페이지 집들이 조회
 async function selectHouseWarm(connection, userId){
   const selectHouseWarmQuery=`
-  select imageUrl as Image
+  select id as HouseWarmId
+        , imageUrl as Image
         , case when id is not null then '온라인 집들이' end as Type 
         , title as Title
 from HouseWarm
-where userId = 1
+where userId = ?
 order by createdAt desc;`;
   const [houseWarmRows] = await connection.query(selectHouseWarmQuery, userId);
   return houseWarmRows;
 }
 
-//마이페이지 노하우 조회
-async function selectKnowHow(connection, userId){
-  const selectKnowHowQuery=`
-  select a.imageUrl as Image
-        , b.name as ThemaName
-        , a.title as Title
-  from KnowHow a
-  left join ( select id
-                    , name 
-                from KnowHowThema ) as b
-                on a.themaId = b.id
-  where userId = ?
-  order by createdAt desc;`;
-  const [knowHowRows] = await connection.query(selectKnowHowQuery, userId);
-  return knowHowRows;
-}
+
 
 //마이페이지 스크랩 갯수
 async function countScrapBook(connection ,userId){
   const countScrapBookQuery=`
-  select count(case when status = 'ACTIVE' and userId then 1 end) as ScrapBookCount
+  select userId as UserId
+         , count(case when status = 'ACTIVE' and userId then 1 end) as ScrapBookCount
   from Scrap
   where userId = ?;`;
   const [countScrapRows] = await connection.query(countScrapBookQuery, userId);
@@ -288,28 +257,22 @@ async function countScrapBook(connection ,userId){
 //마이페이지 집들이 갯수
 async function countHouseWarm(connection, userId){
   const countHouseWarmQuery=`
-  select count(case when status = 'ACTIVE' and userId then 1 end) as HouseWarmCount
+  select userId as UserId
+         , count(case when status = 'ACTIVE' and userId then 1 end) as HouseWarmCount
   from HouseWarm
   where userId = ?;`;
   const [countHouseWarmRows] = await connection.query(countHouseWarmQuery, userId);
   return countHouseWarmRows;
 }
 
-//마이페이지 노하우 갯수
-async function countKnowHow(connection, userId){
-  const countKnowHowQuery=`
-  select count(case when status = 'ACTIVE' and userId then 1 end) as KnowHowCount
-  from KnowHow
-  where userId = ?;`;
-  const [countKnowHowRows] = await connection.query(countKnowHowQuery, userId);
-  return countKnowHowRows;
-}
-
 //다른 유저 페이지 조회
 async function selectUserPageInfo(connection, usersId){
   const selectUserPageInfoQuery=`
-  select a.nickName as NickName
+  select a.id as UserId
+        , a.nickName as NickName
         , a.profileImageUrl as ProfileImage
+        , a.myUrl as MyURL
+        , a.introduce as UserIntro
         , case when follower is null then 0 else follower end as Follower
         , case when following is null then 0 else following end as Following
 from User a
@@ -1007,7 +970,8 @@ async function patchReply(connection, userId, id){
 //전체 카테고리 조회(7ea)
 async function selectStoreCategory(connection){
   const selectStoreCategoryQuery=`
-  select name
+  select id as LargeCategoryId
+        ,name as CategoryName
   from LargeCategory
   order by id asc limit 7;`;
   const [categoryRows] = await connection.query(selectStoreCategoryQuery);
@@ -1017,7 +981,8 @@ async function selectStoreCategory(connection){
 //최근에 본 상품 조회
 async function selectRecentProduct(connection, userId){
   const selectRecentProdcutQuery=`
-  select a.largeCategoryId as CategoryId
+  select a.id as ProductId
+        , a.largeCategoryId as CategoryId
         , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
@@ -1065,7 +1030,8 @@ order by b.createdAt desc;`;
 //최근에 본 상품과 비슷한 상품
 async function selectRecentSimilarProduct (connection, largeCategoryId){
   const selectRecentSimilarProductQuery=`
-    select a.largeCategoryId as CategoryId
+    select a.id as ProductId
+        , a.largeCategoryId as CategoryId
         , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
@@ -1106,7 +1072,8 @@ group by a.id ;`;
 //인기 키워드 조회
 async function selectPopularKeyword(connection){
   const selectPopularKeywordQuery=`
-  select name as KeywordName
+  select id as KeywordId
+        , name as KeywordName
         , imageUrl as Image
 from Keyword
 order by count desc limit 4;`;
@@ -1117,7 +1084,8 @@ order by count desc limit 4;`;
 //인기 상품 조회
 async function selectPopularProduct(connection){
   const selectPopularProductQuery=`
-  select c.imageUrl as Image
+  select a.id as ProductId
+        , c.imageUrl as Image
         , e.name as BrandName
         , a.name as ProductName
         , concat(a.discount, '%') as Discount
@@ -1506,7 +1474,8 @@ where a.id = ?;`;
 //진행중인 주문 조회
 async function selectIngOrders(connection, userId){
   const selectIngOrdersQuery=`
-  select case when count(case when status='WAIT' and a.userId then 1 end) is null then 0 else count(case when status='WAIT' and a.userId then 1 end) end as Waits
+  select a.userId as UserId
+        , case when count(case when status='WAIT' and a.userId then 1 end) is null then 0 else count(case when status='WAIT' and a.userId then 1 end) end as Waits
         , case when count(case when status='PAYCOMPLETE' and a.userId then 1 end) is null then 0 else count(case when status='PAYCOMPLETE' and a.userId then 1 end) end as PaymentComplete
         , case when count(case when status='DELREADY' and a.userId then 1 end) is null then 0 else count(case when status='DELREADY' and a.userId then 1 end) end as DeliveryReady
         , case when count(case when status='DELIVERY' and a.userId then 1 end) is null then 0 else count(case when status='DELIVERY' and a.userId then 1 end) end as Delivery
@@ -1529,7 +1498,8 @@ group by a.userId;`;
 //상품스크랩북, 문의내역, 리뷰 수 조회
 async function selectCount(connection, userId){
   const selectCountQuery=`
-  select case when inquiryCount is null then 0 else inquiryCount end as InquiryCount
+  select a.id as UserId
+        , case when inquiryCount is null then 0 else inquiryCount end as InquiryCount
         , case when scrapCount is null then 0 else scrapCount end as ScrapCount
         , case when reviewCount is null then 0 else reviewCount end as ReviewCount
 from User a
@@ -1638,6 +1608,46 @@ async function postHelpReview(connection ,userId, reviewId){
   return helpRows;
 }
 
+//마이페이지 나의 쇼핑 조회
+async function selectMyPageShopping(connection, userId){
+  const selectMyPageShoppingQuery=`
+    select a.id as userId
+         , case when orderingCount is null then 0 else orderingCount end as Orders
+        , case when couponCount is null then 0 else couponCount end as Coupon
+        , a.point as Point 
+from User a
+left join ( select id
+                    , userId
+                    , count(userId) as couponCount
+                    , status
+                from Coupon
+                where status = 'ACTIVE'
+                group by userId) as g
+                on a.id = g.userId
+left join ( select id
+                , userId
+                , status
+                , count(userId) as orderingCount
+            from Orders
+            where status = 'WAIT' or status = 'PAYCOMPLETE' or status = 'DELREADY' or status ='DELIVERY'
+            group by userId) as b
+            on a.id = b.userId
+  where a.id = ?;`;
+  const [Rows] = await connection.query(selectMyPageShoppingQuery, userId);
+  return Rows;
+}
+
+//마이페이지 리뷰수 조회
+async function selectMyPageReviewCount(connection, userId){
+  const selectMyPageReviewCountQuery=`
+  select userId as UserId
+        , count(userId) as ReviewCount
+  from ProductReview 
+  where userId =? and status = 'ACTIVE'
+  group by userId;`;
+  const [Rows] = await connection.query(selectMyPageReviewCountQuery, userId);
+  return Rows;
+}
 
 
 module.exports = {
@@ -1653,10 +1663,8 @@ module.exports = {
   selectSpacePictures,
   selectScrapBook,
   selectHouseWarm,
-  selectKnowHow,
   countScrapBook,
   countHouseWarm,
-  countKnowHow,
   printTotal,
   selectUserPageInfo,
   selectPicturesSpace,
@@ -1738,4 +1746,6 @@ module.exports = {
   cancelHelpReview,
   patchHelpReview,
   postHelpReview,
+  selectMyPageShopping,
+  selectMyPageReviewCount,
 };

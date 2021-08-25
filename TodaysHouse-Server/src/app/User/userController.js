@@ -106,38 +106,13 @@ exports.login = async function (req, res) {
 exports.getMyPages = async function(req, res){
     const userIdFromJWT = req.verifiedToken.userId;
     const userId = req.params.userId;
-    const result=[];
     if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
     if(userIdFromJWT!=userId){
         res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
     }
     else{
         const getMyPages = await userProvider.getMyPages(userId);
-        const spaceTotal = await userProvider.spaceTotal(userId);
-        const getPictures = await userProvider.getPictures(userId);
-        const pictures = [];
-        spaceTotal.push(getPictures);
-        pictures.push(spaceTotal);
-        for(let i=0; i<8; i++){
-            const getPicturesSpace = await userProvider.getPicturesSpace(i+1);
-            const getUserPictures = await userProvider.getUserPictures(userId, i+1);
-            getPicturesSpace.push(getUserPictures);
-            pictures.push(getPicturesSpace);
-        }
-        const getScrapBook = await userProvider.getScrapBook(userId);
-        const countScrapBook = await userProvider.countScrapBook(userId);
-        countScrapBook.push(getScrapBook);
-        const getHouseWarm = await userProvider.getHouseWarm(userId);
-        const countHouseWarm = await userProvider.countHouseWarm(userId);
-        countHouseWarm.push(getHouseWarm);
-        const getKnowHow = await userProvider.getKnowHow(userId);
-        const countKnowHow = await userProvider.countKnowHow(userId);
-        countKnowHow.push(getKnowHow)
-        result.push({MyPageInfo: getMyPages, Pictures: pictures
-                , AmountScrapBook: countScrapBook
-                , AmountHouseWarm: countHouseWarm
-                , AmountKnowHow: countKnowHow});
-        return res.send(response(baseResponse.SUCCESS, result));
+        return res.send(response(baseResponse.SUCCESS, getMyPages));
     }
 }
 
@@ -149,38 +124,14 @@ exports.getMyPages = async function(req, res){
 exports.getOtherProfiles = async function(req, res){
     const userIdFromJWT = req.verifiedToken.userId;
     const userId = req.params.userId;
-    const {usersId} = req.body;
-    const result =[];
+    const {usersId} = req.query;
     if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
     if(userIdFromJWT!=userId)
         res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
     if(!usersId) return res.send(response(baseResponse.TARGET_USER_USERID_EMPTY));
 
     const userPageInfo = await userProvider.userPageInfo(usersId);
-    const countPictures = await userProvider.countPictures(usersId);
-    const spaceTotal = await userProvider.spaceTotal(userId);
-    const getPictures = await userProvider.getPictures(usersId);
-    const pictures = [];
-    spaceTotal.push(getPictures);
-    pictures.push(spaceTotal);
-    for(let i=0; i<8; i++){
-        const getPicturesSpace = await userProvider.getPicturesSpace(i+1);
-        const getUserPictures = await userProvider.getUserPictures(usersId, i+1);
-        getPicturesSpace.push(getUserPictures);
-        pictures.push(getPicturesSpace);
-    }
-    countPictures.push(pictures);
-    const countHouseWarm = await userProvider.countHouseWarm(usersId);
-    const getHouseWarm = await userProvider.getHouseWarm(usersId);
-    countHouseWarm.push(getHouseWarm);
-    const countKnowHows = await userProvider.countKnowHow(usersId);
-    const getKnowHows = await userProvider.getKnowHow(usersId);
-    countKnowHows.push(getKnowHows);
-    const getScrapBook = await userProvider.getScrapBook(usersId);
-    const countScrapBook = await userProvider.countScrapBook(usersId);
-    countScrapBook.push(getScrapBook);
-    result.push({UsersInfo: userPageInfo, Pictures: countPictures, HouseWarms: countHouseWarm, KnowHows: countKnowHows, ScrapBook: countScrapBook});
-    return res.send(response(baseResponse.SUCCESS, result));
+    return res.send(response(baseResponse.SUCCESS, userPageInfo));
 }
 
 /** API No.5
@@ -552,7 +503,7 @@ exports.patchComment = async function(req, res){
 
 /**
  * API No. 21
- * API Name : 스토어 홈 조회 API
+ * API Name : 스토어 홈 카테고리 조회 API
  * [GET] /app/users/:userId/store-home
  */
 exports.getStoreHome = async function(req, res){
@@ -562,15 +513,7 @@ exports.getStoreHome = async function(req, res){
     if(userIdFromJWT!=userId)
         res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
     const getStoreCategory = await userProvider.getStoreCategory();
-    const getRecentProduct = await userProvider.getRecentProduct(userId);
-    const getRecentSimilarProduct = await userProvider.getRecentSimilarProduct(getRecentProduct[0].CategoryId);
-    const getPopularKeyword = await userProvider.getPopularKeyword();
-    const getPopularProduct = await userProvider.getPopularProduct();
-    const result = [];
-    result.push({ProductCategories: getStoreCategory, RecentViewedProduct: getRecentProduct
-        , RecentViewedSimilarProduct: getRecentSimilarProduct, PopularKeyword: getPopularKeyword
-        , PopularProduct: getPopularProduct});
-    return res.send(response(baseResponse.SUCCESS, result));
+    return res.send(response(baseResponse.SUCCESS, getStoreCategory));
 }
 /**
  * API No. 25
@@ -644,7 +587,7 @@ exports.postOrder = async function (req, res){
 
 /**
  * API No. 28
- * API Name : 주문 생성 API
+ * API Name : 리뷰 생성 API
  * [POST] /app/users/:userId/orders
  */
 exports.postReview = async function(req, res){
@@ -803,7 +746,7 @@ exports.passwordCheck = async function(req, res){
 
 /**
  * API No. 35
- * API Name : 나의 쇼핑 조회 API
+ * API Name : 나의 쇼핑 정보 조회 API
  * [GET] /app/users/:userId/myshopping
  */
 exports.getMyShopping = async function(req, res){
@@ -813,11 +756,7 @@ exports.getMyShopping = async function(req, res){
     if(userIdFromJWT!=userId)
         res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
     const getMyInfo = await userProvider.getMyInfo(userId);
-    const getIngOrders = await userProvider.getIngOrders(userId);
-    const getCount = await userProvider.getCount(userId);
-    const result =[];
-    result.push({UserInfo: getMyInfo, Orders: getIngOrders, Count: getCount});
-    return res.send(response(baseResponse.SUCCESS, result));
+    return res.send(response(baseResponse.SUCCESS, getMyInfo));
 }
 
 /**
@@ -935,7 +874,7 @@ exports.postHelp = async function (req, res){
 }
 
 /**
- * API No. 42
+ * API No.
  * API Name : 2시간마다 푸시 알림 API
  * [GET] /app/push
  */
@@ -962,4 +901,207 @@ exports.pushAlarms = async function(req, res){
             });
         console.log("2시간 경과 ");
     });
+}
+
+
+/**
+ * API No. 45
+ * API Name : 스토어 홈 최근 본 상품 조회 API
+ * [GET] /app/users/:userId/recent-products
+ */
+exports.getRecentProducts = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    const getRecentProduct = await userProvider.getRecentProduct(userId);
+    return res.send(response(baseResponse.SUCCESS, getRecentProduct));
+}
+
+/**
+ * API No. 46
+ * API Name : 스토어 홈 최근 본 상품과 비슷한 상품 조회 API
+ * [GET] /app/users/:userId/recent-similar
+ */
+exports.getRecentSimilar = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const result = [];
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    const getRecentProduct = await userProvider.getRecentProduct(userId);
+    for(let i=0; i<getRecentProduct.length; i++){
+        const getRecentSimilarProduct = await userProvider.getRecentSimilarProduct(getRecentProduct[i].CategoryId);
+        result.push(getRecentSimilarProduct);
+    }
+    return res.send(response(baseResponse.SUCCESS, result));
+}
+
+/**
+ * API No. 47
+ * API Name : 스토어 홈 인기 키워드 조회 API
+ * [GET] /app/users/:userId/popular-keywords
+ */
+exports.getPopularKeywords = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    const getPopularKeyword = await userProvider.getPopularKeyword();
+    return res.send(response(baseResponse.SUCCESS, getPopularKeyword));
+}
+
+/**
+ * API No. 48
+ * API Name : 스토어 홈 인기 상품 조회 API
+ * [GET] /app/users/:userId/popular-products
+ */
+exports.getPopularProducts = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    const getPopularProduct = await userProvider.getPopularProduct();
+    return res.send(response(baseResponse.SUCCESS, getPopularProduct));
+}
+
+/**
+ * API No. 53
+ * API Name : 나의 쇼핑 주문 현황 조회 API
+ * [GET] /app/users/:userId/current-orders
+ */
+exports.getCurrentOrders = async function (req,res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    const getIngOrders = await userProvider.getIngOrders(userId);
+    return res.send(response(baseResponse.SUCCESS, getIngOrders));
+}
+
+/**
+ * API No. 54
+ * API Name : 나의 쇼핑 스크랩북, 문의, 리뷰 수  조회 API
+ * [GET] /app/users/:userId/shopping-status
+ */
+exports.getShoppingStatus = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    const getCount = await userProvider.getCount(userId);
+    return res.send(response(baseResponse.SUCCESS, getCount));
+}
+
+/**
+ * API No. 55
+ * API Name : 마이페이지 나의 쇼핑 조회 API
+ * [GET] /app/users/:userId/mypage-shopping
+ */
+exports.getMyPageShopping = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId){
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    }
+    const getMyPageShopping = await userProvider.getMyPageShopping(userId);
+    return res.send(response(baseResponse.SUCCESS, getMyPageShopping));
+}
+
+/**
+ * API No. 56
+ * API Name : 마이페이지 스크랩북 조회 API
+ * [GET] /app/users/:userId/mypage-scrap
+ */
+exports.getMyPageScrap = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId){
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    }
+    const getScrapBook = await userProvider.getScrapBook(userId);
+    const countScrapBook = await userProvider.countScrapBook(userId);
+    countScrapBook.push(getScrapBook);
+    return res.send(response(baseResponse.SUCCESS, countScrapBook));
+}
+
+/**
+ * API No. 57
+ * API Name : 마이페이지 집들이 조회 API
+ * [GET] /app/users/:userId/mypage-housewarm
+ */
+exports.getMyPageHouseWarm = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId){
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    }
+    const getHouseWarm = await userProvider.getHouseWarm(userId);
+    const countHouseWarm = await userProvider.countHouseWarm(userId);
+    countHouseWarm.push(getHouseWarm);
+    return res.send(response(baseResponse.SUCCESS, countHouseWarm));
+}
+
+/**
+ * API No. 58
+ * API Name : 마이페이지 리뷰 수 조회 API
+ * [GET] /app/users/:userId/mypage-reviewcount
+ */
+exports.getMyPageReviewCount = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId){
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    }
+    const getReviewCount = await userProvider.getMyPageReviewCount(userId);
+    return res.send(response(baseResponse.SUCCESS, getReviewCount));
+}
+
+/**
+ * API No. 59
+ * API Name : 다른 유저 페이지 집들이 조회 API
+ * [GET] /app/users/:userId/otherpage-housewarm
+ */
+exports.getOtherHouseWarm = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {usersId} = req.query;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!usersId) return res.send(response(baseResponse.TARGET_USER_USERID_EMPTY));
+
+    const countHouseWarm = await userProvider.countHouseWarm(usersId);
+    const getHouseWarm = await userProvider.getHouseWarm(usersId);
+    countHouseWarm.push(getHouseWarm);
+    return res.send(response(baseResponse.SUCCESS, countHouseWarm));
+}
+
+/**
+ * API No. 60
+ * API Name : 다른 유저 페이지 스크랩 조회 API
+ * [GET] /app/users/:userId/otherpage-scrap
+ */
+exports.getOtherScrap = async function(req, res){
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const {usersId} = req.query;
+    if(!userId) return res.send(response(baseResponse.USER_USERID_EMPTY));
+    if(userIdFromJWT!=userId)
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if(!usersId) return res.send(response(baseResponse.TARGET_USER_USERID_EMPTY));
+    const getScrapBook = await userProvider.getScrapBook(usersId);
+    const countScrapBook = await userProvider.countScrapBook(usersId);
+    countScrapBook.push(getScrapBook);
+    return res.send(response(baseResponse.SUCCESS, countScrapBook));
 }

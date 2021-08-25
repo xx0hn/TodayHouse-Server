@@ -171,19 +171,11 @@ exports.getProduct = async function(req, res){
     if(!productId) return res.send(response(baseResponse.PRODUCT_ID_EMPTY));
     const getProductImage = await storeProvider.getProductImage(productId);
     const getProductInfo = await storeProvider.getProductInfo(productId);
-    const getStylingShot = await storeProvider.getStylingShot(productId);
     const getProductIntro = await storeProvider.getProductIntro(productId);
-    const getProductReview = await storeProvider.getProductReview(productId);
-    const getReviewTotal = await storeProvider.getReviewTotal(productId);
-    const getReviewPhoto = await storeProvider.getReviewPhoto(productId);
-    const getProductInquiryCount = await storeProvider.getProductInquiryCount(productId);
-    const getSimilarProduct = await storeProvider.getSimilarProduct(getProductInfo[0].largeCategoryId);
     const addProductViewCount = await storeService.addProductViewCount(productId);
     const addRecentProduct = await storeService.addRecentProduct(userId, productId);
     const result=[];
-    result.push({ProductImage: getProductImage, ProductInfo: getProductInfo, ProductStylingShot: getStylingShot,
-                ProductIntro: getProductIntro,TotalReview: getReviewTotal, ReviewPhoto:getReviewPhoto, ProductReview: getProductReview, ProductInquiryCount: getProductInquiryCount,
-                SimilarProduct: getSimilarProduct});
+    result.push({ProductImage: getProductImage, ProductInfo: getProductInfo, ProductIntro: getProductIntro});
     return res.send(response(baseResponse.SUCCESS, result));
 }
 
@@ -258,7 +250,7 @@ exports.getInfo = async function(req, res){
 
 /**
  * API No. 30
- * API Name : 상품 리뷰 조회 API
+ * API Name : 상품 리뷰 더보기 조회 API
  * [GET] /app/products/:productId/reviews
  */
 exports.getReviews = async function(req, res){
@@ -426,4 +418,57 @@ exports.getBackEmail = async function(req, res){
 exports.getRequests = async function(req, res){
     const getRequests = await storeProvider.getRequests();
     return res.send(response(baseResponse.SUCCESS, getRequests));
+}
+
+/**
+ * API No. 49
+ * API Name : 상품 스타일링샷 조회 API
+ * [GET] /app/products/stylingshot
+ */
+exports.getStylingShot = async function(req, res){
+    const {productId} = req.query;
+    if(!productId) return res.send(response(baseResponse.PRODUCT_ID_EMPTY));
+    const getStylingShot = await storeProvider.getStylingShot(productId);
+    return res.send(response(baseResponse.SUCCESS, getStylingShot));
+}
+
+/**
+ * API No. 50
+ * API Name : 상품 리뷰 조회 API
+ * [GET] /app/products/reviews
+ */
+exports.getReview = async function(req, res){
+    const {productId} = req.query;
+    if(!productId) return res.send(response(baseResponse.PRODUCT_ID_EMPTY));
+    const getProductReview = await storeProvider.getProductReview(productId);
+    const getReviewTotal = await storeProvider.getReviewTotal(productId);
+    const getReviewPhoto = await storeProvider.getReviewPhoto(productId);
+    const result = [];
+    result.push({TotalReview: getReviewTotal, ReviewPhoto:getReviewPhoto, ProductReview: getProductReview});
+    return res.send(response(baseResponse.SUCCESS, result));
+}
+
+/**
+ * API No. 51
+ * API Name : 상품 문의 갯수 조회 API
+ * [GET] /app/products/inquiries
+ */
+exports.getInquiryCount = async function(req, res){
+    const {productId} = req.query;
+    if(!productId) return res.send(response(baseResponse.PRODUCT_ID_EMPTY));
+    const getProductInquiryCount = await storeProvider.getProductInquiryCount(productId);
+    return res.send(response(baseResponse.SUCCESS, getProductInquiryCount));
+}
+
+/**
+ * API No. 52
+ * API Name : 상품 비슷한 상품 조회 API
+ * [GET] /app/products/similars
+ */
+exports.getSimilar = async function(req, res){
+    const {productId} = req.query;
+    if(!productId) return res.send(response(baseResponse.PRODUCT_ID_EMPTY));
+    const getProductInfo = await storeProvider.getProductInfo(productId);
+    const getSimilarProduct = await storeProvider.getSimilarProduct(getProductInfo[0].largeCategoryId);
+    return res.send(response(baseResponse.SUCCESS, getSimilarProduct));
 }

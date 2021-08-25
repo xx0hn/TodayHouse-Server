@@ -123,13 +123,7 @@ exports.getHouseWarm = async function(userId){
   return selectHouseWarm;
 }
 
-//마이페이지 노하우 조회
-exports.getKnowHow = async function(userId){
-  const connection = await pool.getConnection(async(conn)=>conn);
-  const selectKnowHow = await userDao.selectKnowHow(connection, userId);
-  connection.release();
-  return selectKnowHow;
-}
+
 
 //마이페이지 스크랩북 갯수
 exports.countScrapBook = async function(userId){
@@ -147,13 +141,7 @@ exports.countHouseWarm = async function(userId){
   return countHouseWarm;
 }
 
-//마이페이지 집들이 갯수
-exports.countKnowHow = async function(userId){
-  const connection = await pool.getConnection(async(conn)=>conn);
-  const countKnowHow = await userDao.countKnowHow(connection, userId);
-  connection.release();
-  return countKnowHow;
-}
+
 
 //다른 유저 페이지 정보
 exports.userPageInfo = async function(usersId){
@@ -505,4 +493,20 @@ exports.reviewHelpReCheck = async function(userId, reviewId){
   const reviewHelpReCheck= await userDao.selectReviewHelpReCheck(connection, userId, reviewId);
   connection.release();
   return reviewHelpReCheck;
+}
+
+//마이페이지 나의쇼핑 조회
+exports.getMyPageShopping = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getMyPageShopping = await userDao.selectMyPageShopping(connection, userId);
+  connection.release();
+  return getMyPageShopping;
+}
+
+//마이페이지 리뷰 수 조회
+exports.getMyPageReviewCount = async function(userId){
+  const connection = await pool.getConnection(async(conn)=>conn);
+  const getMyPageReviewCount = await userDao.selectMyPageReviewCount(connection, userId);
+  connection.release();
+  return getMyPageReviewCount;
 }
