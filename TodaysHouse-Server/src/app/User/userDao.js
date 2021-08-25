@@ -1084,47 +1084,50 @@ order by count desc limit 4;`;
 //인기 상품 조회
 async function selectPopularProduct(connection){
   const selectPopularProductQuery=`
-  select a.id as ProductId
-        , c.imageUrl as Image
-        , e.name as BrandName
-        , a.name as ProductName
-        , concat(a.discount, '%') as Discount
-        , concat(format(a.saleCost,0),'원') as SaleCost
-        , case when starGrade is null then 0 else starGrade end as StarGrade
-        , case when reviewCount is null then 0 else reviewCount end as ReviewCount
-        , case when f.delCost = 0 then '무료배송' end as DelCostType
-        , case when a.discount is not null then '특가' end as SpecialPrice
-from Product a
-left join ( select id
-                    , productId
-                    , count(productId) as countOrders
-                from Orders
-                group by productId) as b
-                on a.id = b.productId
-left join ( select id
-                    , productId
-                    , imageUrl
-                from ProductImageUrl ) as c
-                on a.id = c.productId
-left join ( select id
-                    , productId
-                    , starPoint
-                    , round(sum(starPoint) / count(productId), 1) as 'starGrade'
-                    , count(productId) as 'reviewCount'
-                from ProductReview 
-                group by productId) as d
-                on a.id = c.productId
-left join ( select id
-                    , name
-                from Brand) as e
-                on a.brandId = e.id
-left join  ( select id
-                    , delCost
-                from DeliveryInfo ) as f
-                on a.delInfoId = f.id
-where a.status = 'ACTIVE' 
-group by a.id 
-order by countOrders desc;`;
+    select a.id as ProductId
+         , d.imageUrl as ProductImage
+         , b.name as BrandName
+         , a.name as ProductName
+         , case when a.discount is not null then concat(a.discount, '%') end as DiscountPercent
+         , format(a.saleCost, 0) as Cost
+         , case when starGrade is null then 0 else starGrade end as StarGrade
+         , case when reviewCount is null then 0 else reviewCount end as ReviewCount
+         , case when e.delCost  = 0 then '무료배송' end as DeliveryCost
+         , case when a.discount is not null then '특가' end as SpecialPrice
+    from Product a
+           left join ( select id
+                            , name
+                       from Brand) as b
+                     on a.brandId = b.id
+           left join ( select id
+                            , productId
+                            , starPoint
+                            , round(sum(starPoint)/count(productId), 1) as 'starGrade'
+                        , count(productId) as 'reviewCount'
+                        , status
+                       from ProductReview
+                       where status = 'ACTIVE'
+                       group by productId) as c
+                     on a.id = c.productId
+           left join ( select id
+                            , productId
+                            , imageUrl
+                       from ProductImageUrl ) as d
+                     on a.id = d.id
+           left join ( select id
+                            , delCost
+                       from DeliveryInfo ) as e
+                     on a.delInfoId = e.id
+           left join ( select id
+                            , productId
+                            , count(productId) as 'orderCount'
+                , status
+                       from Orders
+                       where status = 'COMPLETE'
+                       group by productId) as f
+                     on a.id = f.productId
+    where a.status = 'ACTIVE'
+    order by orderCount desc;`;
   const [popularRows] = await connection.query(selectPopularProductQuery);
   return popularRows;
 }
