@@ -391,7 +391,8 @@ where houseWarmId = ?;`;
 //집들이 사진에 들어간 상품 조회
 async function selectHouseWarmContentsProduct(connection, houseWarmContentsId){
     const selectHouseWarmContentsProductQuery=`
-    select d.imageUrl as ProductImage
+    select c.id as ProductId
+           , d.imageUrl as ProductImage
 from HouseWarmContents a
 left join ( select id
                         , houseWarmContentsId

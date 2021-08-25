@@ -1199,7 +1199,7 @@ where a.id = ? and d.id = ? and e.id = ? and c.id = ?;`;
 //쿠폰 없는 가격 조회
 async function selectNoCouponCost(connection, productId, productOptionId){
   const selectNoCouponCostQuery=`
-  select (d.cost) as totalCost
+  select d.cost as totalCost
 from Product a
 left join ( select id
                 , delCost
