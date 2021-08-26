@@ -101,13 +101,14 @@ exports.getHouseWarm = async function (req, res){
     const getContentsTitle = await postProvider.getContentsTitle(houseWarmId); //소제목 출력
     const userImageNickname = await postProvider.getUserImageNickname(houseWarmId); //작성자 프로필사진, 닉네임
     const patchViewCount = await postService.patchViewCount(houseWarmId);
+    const result=[];
     const houseWarmContents = [];
     const houseWarmContent = await postProvider.houseWarmContent(houseWarmId);
     for (let i=0; i<houseWarmContent.length; i++) {
         const getHouseWarmContentsProduct = await postProvider.getHouseWarmContentsProduct(houseWarmContent[i].id);
         houseWarmContents.push({HouseWarmContents: houseWarmContent[i], Products: getHouseWarmContentsProduct});
     }
-    const result={HouseWarmInfo: getHouseWarm, HouseWarmContents: houseWarmContents, WrittenBy: userImageNickname};
+    result.push({HouseWarmInfo: getHouseWarm, HouseWarmContents: houseWarmContents, WrittenBy: userImageNickname});
     return res.send(response(baseResponse.SUCCESS, result));
 }
 

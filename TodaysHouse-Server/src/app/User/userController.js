@@ -1080,11 +1080,11 @@ exports.getOtherScrap = async function(req, res){
 
 /**
  * API No. **
- * API Name : 2시간마다 푸시 알림 API
+ * API Name : 매 정시마다 푸시 알림 API
  * [GET] /app/push
  */
 exports.pushAlarms = async function(req, res){
-    schedule.scheduleJob('*/5 * * * * *', async function(){
+    schedule.scheduleJob('0 0 * * * *', async function(){
         let deviceToken=`BAq_OGQy5KIAVFdHdc7N1Jq_btjZfyPrIJoP4wc1uX3v2TcEZnmr2IszGI0UY20PwRGrd55G_-dhNt4Wxz612yU`
         let message = {
             notification:{
@@ -1104,6 +1104,6 @@ exports.pushAlarms = async function(req, res){
                 console.log('Error Sending message!!! : ', err)
                 return res.status(400).json({success: false})
             });
-        console.log("2시간 경과 ");
+        console.log("정각입니다. ");
     });
 }

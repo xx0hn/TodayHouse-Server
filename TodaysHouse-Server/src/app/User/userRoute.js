@@ -160,7 +160,7 @@ module.exports = function(app){
     // 60. 다른 유저 페이지 스크랩 조회 API
     app.get('/app/users/:userId/otherpage-scrap', jwtMiddleware, user.getOtherScrap);
 
-    // **. 2시간마다 푸시 알림 API
+    // **. 정시마다 푸시 알림 API
     app.get('/app/push', user.pushAlarms);
 
     // TODO: After 로그인 인증 방법 (JWT)
