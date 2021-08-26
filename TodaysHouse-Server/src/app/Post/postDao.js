@@ -13,8 +13,8 @@ order by viewCount desc limit 10;`;
 //전체 카테고리 조회
 async function selectTotalCategory(connection){
     const selectTotalCategoryQuery=`
-    select name as CategoryName
-        , imageUrl as CategoryImage
+    select id as LargeCategoryId
+            , name as CategoryName
 from LargeCategory
 order by id asc;`;
     const [categoryRows] = await connection.query(selectTotalCategoryQuery);
@@ -24,7 +24,8 @@ order by id asc;`;
 //카테고리명 조회
 async function selectCategoryName(connection, categoryId){
     const selectCategoryNameQuery=`
-    select case when b.id is null then '전체' else b.name end as CategoryName
+    select b.id as LargeCategoryId
+           , case when b.id is null then '전체' else b.name end as CategoryName
 from Product a
 left join ( select id
                 , name
