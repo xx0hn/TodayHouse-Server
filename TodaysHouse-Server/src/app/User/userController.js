@@ -17,12 +17,12 @@ const { logger } = require('../../../config/winston');
 const baseResponseStatus = require('../../../config/baseResponseStatus');
 const schedule = require('node-schedule');
 
-// var admin = require("/firebase-admin");
-// var serviceAccount = require("/Desktop/Rising Test/todayhouse-b-brad-firebase-adminsdk-7qzqd-dd3fea0f1a.json");
+const admin = require("firebase-admin");
+let serviceAccount = require('/Users/hwangseunghwan/Documents/todayhouse-b-brad-firebase-adminsdk-7qzqd-b504965f8a.json');
 
-// admin.initializeApp({
-//     credential: admin.credential.cert(serviceAccount)
-// });
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
 
 
 
@@ -873,35 +873,7 @@ exports.postHelp = async function (req, res){
     }
 }
 
-/**
- * API No.
- * API Name : 2시간마다 푸시 알림 API
- * [GET] /app/push
- */
-exports.pushAlarms = async function(req, res){
-    schedule.scheduleJob('* * */2 * * *', async function(){
-        let deviceToken=`nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCyjLKOOc8AIypk\\n2ashyZTxiQuRmHocQj11J86pOpwa3QAnxkRYwZCQP9Zk0/Y5WFFeU7MjQn8xHlIo\\nu1aJ38/ViRCFnZYXW0G5yJ8GNRDQqWjaHWf6q2mHooNlP6S3vfc4cwpUrU7BdvaT\\nmvUUtK6epLRlExuER61a3EdniS56gf39Cw+U2VCTy9moK16wTI0ev2amahtSC0R4\\n3mb2hve8fpDEtSZ+ajbeu4iuHqMlGHPeaSHVVIPq+cTjF//FDNSZ0Ggb4WFgj2o9\\n5B2sXRsOP3v9UBH9uQ/hYkqV5ax2zBBsKCUGtmEUoUcng80QI1Q+a1FjLlbk5gxO\\nZgDnL3sfAgMBAAECggEAFYCdNkSe+bjCb7/I/LoujkH/WyreNc4CYbwIBthQmWmZ\\nDbEyZO/2rXCKrLzcD77jmbUBw1LMR4mLwm0BOHx0JpapnzXBsBFk4m9XO2OjoUVt\\no6rb7VO8U0HOiiB2gUxG3Az6pwTyEZl2i4MjVbmGuANE2FFLRIxvQ5x4mu7p4oXW\\nn5WOXirra2mksE0VbMEUTtKg3Jlfi6Jnk+lijhUuOo/h6HRrCheenLoaIfKPSe3i\\nCQezRbgZZiEizsZT39XyLdCGMEBiQLVeu/nbFzp7RuewKC3BpfMxKY2z6iHPku/D\\nmwK40siucBZB2O/VPK+Ti0WdpzGFf/9qiKxxHC0PBQKBgQDcz6AaFh6mJjuDf44p\\nUtX1M7yCYZf4XSpjCO07ou3rmNspiTFietmjfOlTrFbKRubkQhtA7Uc31kdJ/84T\\nIR5sOyL3D/BeNz2TqTgi3J2p9E/t8NKifK0CKm+hRmSF3ZEJlblBnQsVFTJz7y79\\n7EZvYJbKQWsfHReMuCzHEH2JRQKBgQDPAPFC3Q89SWl5oQojD3BMggCVLs41Beis\\nr7Ip5oInYKFcWwP8HITcF5GI1fhEJl/AM8nKOF4GtZgYcqrF4/MDWyr336G5BrkN\\nC6jpkbIYIijNWgfcdzU+U/louEwk1shpyl9jrh/2IaFUcC4TOOt3aqlXidf0UDO+\\n8oVDOZpPEwKBgHNUZnT5lKyHT5JRLzlaMLJPgWg//RYV4yuy3+XEJaxmPCInrAmZ\\nzM7dUSkI3JPuEG6sMHvq8sWxP67g0wuewrsY8BxG0O8Evz6+pblfrWG1X4IRxJJl\\nuB9ndsKvd5WLslNlRkuE8OLkHWP8S3kIzYki099z57VqhoBTOeAHNupZAoGAa9cT\\n2T+M1uLN3h11SHqciF8Zqp5tstXXN094w7dgit8ecRzBYLACzx5AJUdDRU2wiFLy\\nhzUCVwB3shTavqlYSqFOK0AH4nqMIS2326aZX1U8aG7EtagsxsG8pz+L+40hb2uM\\nckOeRv2SLIkcl8sJcHbSrdYT+SVnL8zse+8gYp0CgYA4b4Ou1zc1p14Q3TmXDu53\\nbBNiM+G7v7BgfEfB637hU53FnesM4aOrjU2/HTPpuwyR3xcfxEYDq2gNZIcUmWey\\n37a6W8LCPV6PjQEWT6lJ8cRhE6gABSPNG+juWWMcaWNf9RzcVJf50jurFV09yeEy\\nWbtovVjEZDZ65KunCHWElw==`
-        let message = {
-        notification:{
-            title: 'PushAlarms Test',
-            body:'Check your TodayHouse!',
-        },
-        token:deviceToken,
-        }
-        admin
-            .messaging()
-            .send(message)
-            .then(function(response){
-                console.log('Successfully sent message:', response)
-                return res.status(200).json({success: true})
-            })
-            .catch(function(err) {
-                console.log('Error Sending message!!! : ', err)
-                return res.status(400).json({success: false})
-            });
-        console.log("2시간 경과 ");
-    });
-}
+
 
 
 /**
@@ -1104,4 +1076,34 @@ exports.getOtherScrap = async function(req, res){
     const countScrapBook = await userProvider.countScrapBook(usersId);
     countScrapBook.push(getScrapBook);
     return res.send(response(baseResponse.SUCCESS, countScrapBook));
+}
+
+/**
+ * API No. **
+ * API Name : 2시간마다 푸시 알림 API
+ * [GET] /app/push
+ */
+exports.pushAlarms = async function(req, res){
+    schedule.scheduleJob('*/5 * * * * *', async function(){
+        let deviceToken=`BAq_OGQy5KIAVFdHdc7N1Jq_btjZfyPrIJoP4wc1uX3v2TcEZnmr2IszGI0UY20PwRGrd55G_-dhNt4Wxz612yU`
+        let message = {
+            notification:{
+                title: 'PushAlarms Test',
+                body:'Check your TodayHouse!',
+            },
+            token:deviceToken,
+        }
+        admin
+            .messaging()
+            .send(message)
+            .then(function(response){
+                console.log('Successfully sent message:', response)
+                return res.status(200).json({success: true})
+            })
+            .catch(function(err) {
+                console.log('Error Sending message!!! : ', err)
+                return res.status(400).json({success: false})
+            });
+        console.log("2시간 경과 ");
+    });
 }

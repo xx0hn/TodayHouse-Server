@@ -26,4 +26,7 @@ module.exports = function(app) {
 
     // 44. 비슷한 집들이 조회 API
     app.get('/app/housewarms/:houseWarmId/similar', post.getSimilar);
+
+    // 61. 집들이 게시글에 포함된 모든 상품 조회 API
+    app.get('/app/posts/housewarms-products/:houseWarmId', post.getProducts);
 }

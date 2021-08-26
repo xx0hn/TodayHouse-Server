@@ -100,7 +100,6 @@ exports.getHouseWarm = async function (req, res){
     const getHouseWarm = await postProvider.getHouseWarm(houseWarmId);
     const getContentsTitle = await postProvider.getContentsTitle(houseWarmId); //소제목 출력
     const userImageNickname = await postProvider.getUserImageNickname(houseWarmId); //작성자 프로필사진, 닉네임
-    const getIncludeTotalProduct = await postProvider.getIncludeTotalProduct(houseWarmId); //포함된 상품 전체 조회
     const patchViewCount = await postService.patchViewCount(houseWarmId);
     const houseWarmContents = [];
     const houseWarmContent = await postProvider.houseWarmContent(houseWarmId);
@@ -108,8 +107,7 @@ exports.getHouseWarm = async function (req, res){
         const getHouseWarmContentsProduct = await postProvider.getHouseWarmContentsProduct(houseWarmContent[i].id);
         houseWarmContents.push({HouseWarmContents: houseWarmContent[i], Products: getHouseWarmContentsProduct});
     }
-    const result={HouseWarmInfo: getHouseWarm, HouseWarmContents: houseWarmContents, WrittenBy: userImageNickname
-                , IncludeTotalProduct: getIncludeTotalProduct};
+    const result={HouseWarmInfo: getHouseWarm, HouseWarmContents: houseWarmContents, WrittenBy: userImageNickname};
     return res.send(response(baseResponse.SUCCESS, result));
 }
 
@@ -202,4 +200,16 @@ exports.getSimilar = async function(req, res){
     const getHouseWarmStyleId = await postProvider.getHouseWarmStyleId(houseWarmId);
     const getSimilarHouseWarm = await postProvider.getSimilarHouseWarm(getHouseWarmStyleId[0].id); //비슷한 집들이 조회
     return res.send(response(baseResponse.SUCCESS, getSimilarHouseWarm));
+}
+
+/**
+ * API No. 61
+ * API Name : 집들이 게시글에 포함된 모든 상품 조회 API
+ * [GET] /app/housewarms/products
+ */
+exports.getProducts = async function(req, res){
+    const houseWarmId = req.params.houseWarmId;
+    if(!houseWarmId) return res.send(response(baseResponse.HOUSE_WARM_ID_EMPTY));
+    const getIncludeTotalProduct = await postProvider.getIncludeTotalProduct(houseWarmId); //포함된 상품 전체 조회
+    return res.send(response(baseResponse.SUCCESS, getIncludeTotalProduct));
 }
