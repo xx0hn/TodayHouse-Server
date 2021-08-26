@@ -17,12 +17,12 @@ const { logger } = require('../../../config/winston');
 const baseResponseStatus = require('../../../config/baseResponseStatus');
 const schedule = require('node-schedule');
 
-const admin = require("firebase-admin");
-let serviceAccount = require('/Users/hwangseunghwan/Documents/todayhouse-b-brad-firebase-adminsdk-7qzqd-b504965f8a.json');
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
+// const admin = require("firebase-admin");
+// let serviceAccount = require('/Users/hwangseunghwan/Documents/todayhouse-b-brad-firebase-adminsdk-7qzqd-b504965f8a.json');
+//
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount)
+// });
 
 
 
