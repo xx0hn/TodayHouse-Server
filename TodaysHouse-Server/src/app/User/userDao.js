@@ -196,7 +196,8 @@ order by createdAt desc limit 1;`;
 //마이페이지 스크랩북 조회
 async function selectScrapBook (connection, userId){
   const selectScrapBookQuery=`
-  select case when a.houseWarmId is not null then a.houseWarmId when a.productId is not null then a.productId end as Id
+  select 
+         case when a.houseWarmId is not null then a.houseWarmId when a.productId is not null then a.productId end as Id
          , case when a.houseWarmId is not null then '집들이' when a.productId is not null then '상품' end as Type
         , case when a.houseWarmId is not null then b.imageUrl when a.productId is not null then h.imageUrl end as Image
 from Scrap a
@@ -205,11 +206,6 @@ left join ( select id
                 from HouseWarm 
                 group by id ) as b
                 on a.houseWarmId = b.id
-left join ( select id
-                    , imageUrl
-                from ProHouseWarming 
-                group by id ) as e
-                on a.proHouseWarmId = e.id
 left join ( select id
                 from Product ) as g
                 on a.productId = g.id
@@ -1602,7 +1598,7 @@ async function selectMyPageShopping(connection, userId){
     select a.id as userId
          , case when orderingCount is null then 0 else orderingCount end as Orders
         , case when couponCount is null then 0 else couponCount end as Coupon
-        , a.point as Point 
+        , format(a.point, 0) as Point 
 from User a
 left join ( select id
                     , userId
