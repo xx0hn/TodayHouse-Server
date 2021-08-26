@@ -1,8 +1,8 @@
 //중간 카테고리명 조회
 async function selectMiddleCategory(connection, categoryId){
     const selectMiddleCategoryQuery=`
-    select name
-            , imageUrl
+    select id as MiddleCategoryId
+            , name as MiddleCategoryName
 from MiddleCategory
 where largeCategoryId = ?;`;
     const [categoryRows] = await connection.query(selectMiddleCategoryQuery, categoryId);
@@ -12,8 +12,8 @@ where largeCategoryId = ?;`;
 //작은 카테고리명 조회
 async function selectSmallCategory(connection, categoryId){
     const selectSmallCategoryQuery=`
-    select name
-           , imageUrl
+    select id as SmallCategoryId
+            , name as CategoryName
     from SmallCategory
     where middleCategoryId = ?;`;
     const [categoryRows] = await connection.query(selectSmallCategoryQuery, categoryId);
@@ -23,7 +23,8 @@ async function selectSmallCategory(connection, categoryId){
 //세부 카테고리명 조회
 async function selectDetailCategory(connection, categoryId){
     const selectDetailCategoryQuery=`
-    select name
+    select id as DetailCategoryId
+            , name as DetailCategoryName
     from DetailCategory
     where smallCategoryId =?;`;
     const [categoryRows] = await connection.query(selectDetailCategoryQuery, categoryId);
