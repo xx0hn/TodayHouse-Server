@@ -219,7 +219,7 @@ where a.id = ?;`;
 //포함된 전체 상품 조회
 async function selectTotalProduct (connection, houseWarmId){
     const selectTotalProductQuery=`
-        select c.id       as ProductId
+        select distinct c.id       as ProductId
              , d.imageUrl as Image
              , e.name     as BrandName
              , c.name     as ProductName

@@ -524,8 +524,8 @@ async function cancelProductScrap(connection, userId, id){
 //스크랩 전체 조회
 async function selectTotalScrap(connection, userId){
   const selectTotalScrapQuery=`
-  select case when a.houseWarmId is not null then '집들이' when a.productId is not null then '상품' when a.pictureId is not null then '사진' end as Type
-\t\t, case when a.houseWarmId is not null then b.imageUrl when a.productId is not null then d.imageUrl when a.pictureId is not null then f.imageUrl end as Image
+  select case when a.houseWarmId is not null then '집들이' when a.productId is not null then '상품' end as Type
+    , case when a.houseWarmId is not null then b.imageUrl when a.productId is not null then d.imageUrl end as Image
 from Scrap a
 left join ( select id
                     , imageUrl
@@ -540,15 +540,6 @@ left join ( select id
                 from ProductImageUrl 
                 group by productId ) as d
                 on c.id = d.productId
-left join ( select id
-                from Picture ) as e
-                on a.pictureId = e.id
-left join ( select id
-                , imageUrl
-                , pictureId
-                from PictureContents 
-                group by pictureId) as f
-                on e.id = f.pictureId
 where a.userId = ? and a.status = 'ACTIVE';`;
   const [totalScrapRows] = await connection.query(selectTotalScrapQuery, userId);
   return totalScrapRows;
@@ -566,7 +557,6 @@ left join ( select id
                     , folderId
                     , houseWarmId
                     , productId
-                    , pictureId
                     , count(folderId) as countScrap
             from Scrap
             group by folderId ) as b
@@ -579,7 +569,8 @@ where a.userId = ? and a.status = 'ACTIVE';`;
 //스크랩 폴더 이미지 조회
 async function selectFolderImage(connection, userId, folderId){
   const selectFolderImageQuery=`
-  select case when a.houseWarmId is not null then c.imageUrl when a.productId is not null then e.imageUrl when a.pictureId is not null then g.imageUrl end as Image
+  select a.folderId as FolderId
+         , case when a.houseWarmId is not null then c.imageUrl when a.productId is not null then e.imageUrl end as Image
 from Scrap a
 left join ( select id
             from Folder ) as b
@@ -597,15 +588,6 @@ left join ( select id
             from ProductImageUrl 
             group by productId ) as e
             on d.id = e.productId
-left join ( select id
-                from Picture ) as f
-                on a.pictureId = f.id
-left join ( select id
-                , imageUrl
-                , pictureId
-                from PictureContents 
-                group by pictureId) as g
-                on f.id = g.pictureId
 where a.userId = ? and a.folderId = ? and a.status = 'ACTIVE'
 order by a.createdAt desc limit 1;`;
   const [folderImageRows] = await connection.query(selectFolderImageQuery, [userId, folderId]);
