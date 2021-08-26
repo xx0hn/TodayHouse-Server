@@ -524,7 +524,8 @@ async function cancelProductScrap(connection, userId, id){
 //스크랩 전체 조회
 async function selectTotalScrap(connection, userId){
   const selectTotalScrapQuery=`
-  select case when a.houseWarmId is not null then '집들이' when a.productId is not null then '상품' end as Type
+  select case when a.houseWarmId is not null then a.houseWarmId when a.productId is not null then a.productId end as Id
+    , case when a.houseWarmId is not null then '집들이' when a.productId is not null then '상품' end as Type
     , case when a.houseWarmId is not null then b.imageUrl when a.productId is not null then d.imageUrl end as Image
 from Scrap a
 left join ( select id
@@ -769,7 +770,8 @@ async function cancelLike(connection, userId, houseWarmId){
 //전체 좋아요 조회
 async function selectTotalLike(connection, userId){
   const selectTotalLikeQuery=`
-  select case when a.houseWarmId is not null then '집들이' end as Type
+  select case when a.houseWarmId is not null then a.houseWarmId end as HouseWarmId
+        , case when a.houseWarmId is not null then '집들이' end as Type
         , b.imageUrl as Image
 from Likes a
 left join ( select id
