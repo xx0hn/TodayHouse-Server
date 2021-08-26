@@ -786,7 +786,8 @@ where a.userId = ? and a.status = 'ACTIVE';`;
 //집들이 좋아요 조회
 async function selectHouseWarmLike(connection, userId){
   const selectHouseWarmLikeQuery=`
-  select case when a.houseWarmId is not null then '온라인 집들이' end as Type
+  select b.id as HouseWarmId
+         ,  case when a.houseWarmId is not null then '온라인 집들이' end as Type
             , b.imageUrl as Image
             , b.title as Title
             , c.nickName as UserNickName
