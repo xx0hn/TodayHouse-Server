@@ -15,7 +15,8 @@ https://prod.xx0hn.site
 - AWS RDS
 
 ## API list
-01	POST	/app/sign-up	유저 생성 API (회원가입)
+01	POST	`/app/sign-up	유저 생성 API (회원가입)`
+
 02	POST	/app/login	로그인 API
 03	GET	/app/users/:userId/mypages	유저 마이페이지 정보 조회 API
 04	GET	/app/users/:userId/profiles	다른 유저 페이지 정보 조회 API
