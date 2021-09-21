@@ -76,4 +76,5 @@ https://prod.xx0hn.site
 59.	GET	`/app/users/:userId/otherpage-housewarm`	다른 유저 페이지 집들이 조회 API
 60.	GET	`/app/users/:userId/otherpage-scrap`	다른 유저 페이지 스크랩 조회 API
 61.	GET	`/app/posts/housewarms-products/:houseWarmId`	 집들이 게시물 포함된 모든 상품 조회API
+
 **  GET	`/app/push`	매 정시마다 푸시 알림 API
